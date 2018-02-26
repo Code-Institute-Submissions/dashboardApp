@@ -121,6 +121,7 @@ const state = {
   menu: JSON.parse(localStorage.getItem('menu-data'))
 }
 var getters = {
+  getShowMerchants: state => state.menu.ShowMerchants,
   getMenu: state => state.menu
 }
 var mutations = {

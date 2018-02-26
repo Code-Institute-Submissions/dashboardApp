@@ -13,6 +13,7 @@
         </q-btn>
 
         <q-toolbar-title>
+          {{ $t("messages.page_title") }}
         </q-toolbar-title>
 
         <q-btn flat @click="$router.replace('/logout')" >
@@ -27,9 +28,9 @@
           internal vue-router navigation
         -->
         <q-list highlight>
-          <q-side-link >
+          <q-side-link item to="/admin/Merchants" exact>
             <q-item-side icon="local post office" />
-            <q-item-main label="" sublabel="" />
+            <q-item-main v-bind:label="$t('messages.Menu_merchant')" sublabel="" />
           </q-side-link>
         </q-list>
       </div>

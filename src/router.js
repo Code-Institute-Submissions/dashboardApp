@@ -38,6 +38,7 @@ export default new VueRouter({
       component: load('Main'),
       children: [
         {path: 'Home', name: 'Home', component: load('Views/Home'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Merchants', name: 'Merchants', component: load('Views/Merchants'), meta: {auth: {roles: 'admin'}}}
       ]
     },
     // Always leave this last one
