@@ -110,7 +110,14 @@ export default {
   },
   data () {
     return {
-      menu: []
+      menu: [],
+      ViewMerchant: {
+        Name: '',
+        WhitelabelMerchantID: '',
+        MerchantID: '',
+        CompanyName: '',
+        CompanyAddress: ''
+      }
     }
   },
   mounted () {

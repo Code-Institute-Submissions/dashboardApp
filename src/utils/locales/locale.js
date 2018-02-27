@@ -10,7 +10,10 @@ module.exports = {
       CompanyName: 'Company name',
       CompanyAddress: 'Address',
       ShowMore: 'Show More',
-      merchant_details: 'Merchant Details'
+      DownloadCsv: 'Download Csv',
+      merchant_csv: 'Download Csv',
+      merchant_details: 'Merchant Details',
+      error_data: 'Can\'t show data'
     }
   }
 }

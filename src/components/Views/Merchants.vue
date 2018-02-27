@@ -8,12 +8,19 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="view(cell.row.ID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="view(cell.row.MerchantID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.merchant_details") }}
           </q-tooltip>
         </q-btn>
       </template>
+       <!-- <template slot="col-Download" slot-scope="cell">
+        <q-btn small round flat v-on:click="getCsv(cell.row.ID)"><q-icon name="get app" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.merchant_csv") }}
+          </q-tooltip>
+        </q-btn>
+      </template> -->
 
     </q-data-table>
     <div class="auto">
@@ -21,6 +28,11 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
+      <q-btn small round flat v-on:click="getCsv(cell.row.ID)"><q-icon name="get app" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.merchant_csv") }}
+          </q-tooltip>
+        </q-btn>
     </div>
     
     <q-modal ref="layoutModalShowMerchantDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
@@ -32,11 +44,11 @@
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          <q-input v-model="Merchants.WhitelabelMerchantID" v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
-          <q-input v-model="Merchants.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
-          <q-input v-model="Merchants.Name" v-bind:stack-label="$t('messages.Name')" readonly />
-          <q-input v-model="Merchants.CompanyName" v-bind:stack-label="$t('messages.CompanyName')" readonly />
-          <q-input v-model="Merchants.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" readonly />
+          <q-input v-model="ViewMerchant.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
+          <q-input v-model="ViewMerchant.WhitelabelMerchantID" v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
+          <q-input v-model="ViewMerchant.Name" v-bind:stack-label="$t('messages.Name')" readonly />
+          <q-input v-model="ViewMerchant.CompanyName" v-bind:stack-label="$t('messages.CompanyName')" readonly />
+          <q-input v-model="ViewMerchant.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" readonly />
 
         </div>
       </q-modal-layout>
@@ -58,12 +70,13 @@
     QIcon,
     QTooltip,
     QCollapsible,
-    clone,
     QPagination,
     QSearch,
     QModal,
     QModalLayout,
-    QToolbar
+    QToolbar,
+    Loading,
+    Alert
   } from 'quasar'
   import axios from 'axios'
   var unwatchers = null
@@ -89,9 +102,16 @@
         },
         maxPages: 1,
         Merchants: {
+          Name: '',
           WhitelabelMerchantID: '',
           MerchantID: '',
+          CompanyName: '',
+          CompanyAddress: ''
+        },
+        ViewMerchant: {
           Name: '',
+          WhitelabelMerchantID: '',
+          MerchantID: '',
           CompanyName: '',
           CompanyAddress: ''
         },
@@ -121,19 +141,28 @@
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
           this.table = response.data.Merchants
           this.maxPages = response.data.Pages.TotalPages
-          this.Merchants.WhitelabelMerchantID = response.data.Merchants.WhitelabelMerchantID
-          this.Merchants.MerchantID = response.data.Merchants.MerchantID
-          this.Merchants.Name = response.data.Merchants.Name
-          this.Merchants.CompanyName = response.data.Merchants.CompanyName
-          this.Merchants.CompanyAddress = response.data.Merchants.CompanyAddress
+          this.Merchants = response.data.Merchants[0]
         }, response => {
           // error callback
         })
       },
       view (ID) {
-        this.MerchantID = ID
+        console.log(ID)
+        this.ViewMerchant.MerchantID = ID
         this.$refs.layoutModalShowMerchantDetails.open()
-        return true
+      },
+      getCsv () {
+        var ret = {GetCsv: true}
+        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+          const url = window.URL.createObjectURL(new Blob([response.data]))
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', 'merchants-data.csv')
+          document.body.appendChild(link)
+          link.click()
+        }, response => {
+          // error callback
+        })
       },
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {
@@ -181,12 +210,13 @@
       QIcon,
       QTooltip,
       QCollapsible,
-      clone,
       QPagination,
       QSearch,
       QModal,
       QModalLayout,
-      QToolbar
+      QToolbar,
+      Loading,
+      Alert
     }
   }
 </script>
