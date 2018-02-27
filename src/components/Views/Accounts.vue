@@ -8,24 +8,12 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewMerchant(cell.row.MerchantID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="view(cell.row.AccountID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.merchant_details") }}
-          </q-tooltip>
-        </q-btn>
-        <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID)"  color="primary"><q-icon name="forward" />
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.ViewMerchantAccounts") }}
+            {{ $t("messages.account_details") }}
           </q-tooltip>
         </q-btn>
       </template>
-       <!-- <template slot="col-Download" slot-scope="cell">
-        <q-btn small round flat v-on:click="getCsv(cell.row.ID)"><q-icon name="get app" />
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.merchant_csv") }}
-          </q-tooltip>
-        </q-btn>
-      </template> -->
 
     </q-data-table>
     <div class="auto">
@@ -40,20 +28,19 @@
         </q-btn>
     </div>
     
-    <q-modal ref="layoutModalShowMerchantDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowAccountDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
-          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowMerchantDetails.close()"><q-icon name="clear" /></q-btn>
+          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowAccountDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            Merchant Info
+            Account Info
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          <q-input v-model="ViewMerchant.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
-          <q-input v-model="ViewMerchant.WhitelabelMerchantID" v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
-          <q-input v-model="ViewMerchant.Name" v-bind:stack-label="$t('messages.Name')" readonly />
-          <q-input v-model="ViewMerchant.CompanyName" v-bind:stack-label="$t('messages.CompanyName')" readonly />
-          <q-input v-model="ViewMerchant.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" readonly />
+          <q-input v-model="ViewAccount.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
+          <q-input v-model="ViewAccount.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
+          <q-input v-model="ViewAccount.Name" v-bind:stack-label="$t('messages.Name')" readonly />
+          <q-input v-model="ViewAccount.Type" v-bind:stack-label="$t('messages.AccountType')" readonly />
 
         </div>
       </q-modal-layout>
@@ -97,28 +84,22 @@
         searchData: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '80px' },
-          { label: this.$t('messages.WhitelabelMerchantID'), field: 'WhitelabelMerchantID', width: '150px', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: true, type: 'guid', filter: true },
           { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: true, type: 'guid', filter: true },
-          { label: this.$t('messages.Name'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true }
+          { label: this.$t('messages.AccountName'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true }
         ],
         configs: {
           columnPicker: false,
-          title: this.$t('messages.app_table_title_merchants')
+          title: this.$t('messages.app_table_title_accounts')
         },
         maxPages: 1,
-        Merchants: {
-          Name: '',
+        Accounts: {},
+        ViewAccount: {
           WhitelabelMerchantID: '',
           MerchantID: '',
-          CompanyName: '',
-          CompanyAddress: ''
-        },
-        ViewMerchant: {
+          AccountID: '',
           Name: '',
-          WhitelabelMerchantID: '',
-          MerchantID: '',
-          CompanyName: '',
-          CompanyAddress: ''
+          Type: ''
         },
         sort: {
           column: 'Name',
@@ -134,42 +115,52 @@
     },
     computed: {
       url () {
-        var ret = {ListPage: this.page, ListOrder: ''}
-        if (this.sort.column !== '') {
-          ret.ListOrder = this.sort.column + '.' + this.sort.dir
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
         }
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
+        }
+        var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
         return ret
       }
     },
     methods: {
       getData () {
-        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
-          this.table = response.data.Merchants
+        axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
+          this.table = response.data.Accounts
           this.maxPages = response.data.Pages.TotalPages
-          this.Merchants = response.data.Merchants[0]
+          this.Accounts = response.data.Accounts[0]
         }, response => {
           // error callback
         })
       },
-      viewMerchant (ID) {
+      /* view (ID) {
         console.log(ID)
-        this.ViewMerchant.MerchantID = ID
-        this.$refs.layoutModalShowMerchantDetails.open()
-        /* var MerchantData = this.Merchants
-        var index = MerchantData.findIndex(obj => obj.MerchantID === ID)
-        console.log(index) */
-      },
-      viewAccounts (ID) {
-        this.$router.push({path: '/admin/Accounts/' + ID, param: {MerchantID: ID}})
+        this.ViewAccount.AccountID = ID
+        this.$refs.layoutModalShowAccountDetails.open()
+      }, */
+      view (ID) {
+        axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', {MerchantID: ID}).then(response => {
+          this.ViewAccount = response.data.Accounts
+          this.$refs.layoutModalShowAccountDetails.open()
+          console.log({ID: ID})
+          /* console.log(this.ViewAccount[AccountID = ID]) */
+        }, response => {
+          Alert.create({color: 'red', html: this.$t('messages.error_data'), icon: 'report_problem'})
+        })
         return true
       },
       getCsv () {
         var ret = {GetCsv: true}
-        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+        axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', ret).then(response => {
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
-          link.setAttribute('download', 'merchants-data.csv')
+          link.setAttribute('download', 'accounts-data.csv')
           document.body.appendChild(link)
           link.click()
         }, response => {

@@ -15,7 +15,8 @@ export default {
   runtime: {
     base: '/Mailer/',
     menu: {
-      ShowMerchants: false
+      ShowMerchants: false,
+      ShowAccounts: false
     },
     merchant: {}
   }

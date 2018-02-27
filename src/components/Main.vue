@@ -28,9 +28,13 @@
           internal vue-router navigation
         -->
         <q-list highlight>
-          <q-side-link item to="/admin/Merchants" exact>
+          <q-side-link item to="/admin/Merchants" exact v-if="this.$store.getters.getShowMerchants">
             <q-item-side icon="local post office" />
             <q-item-main v-bind:label="$t('messages.Menu_merchant')" sublabel="" />
+          </q-side-link>
+          <q-side-link item to="/admin/Accounts" exact v-if="this.$store.getters.getShowAccounts">
+            <q-item-side icon="local post office" />
+            <q-item-main v-bind:label="$t('messages.Menu_account')" sublabel="" />
           </q-side-link>
         </q-list>
       </div>

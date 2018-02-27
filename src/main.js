@@ -122,6 +122,7 @@ const state = {
 }
 var getters = {
   getShowMerchants: state => state.menu.ShowMerchants,
+  getShowAccounts: state => state.menu.ShowAccounts,
   getMenu: state => state.menu
 }
 var mutations = {
