@@ -16,7 +16,8 @@ export default {
     base: '/Mailer/',
     menu: {
       ShowMerchants: false,
-      ShowAccounts: false
+      ShowAccounts: false,
+      ShowTransactions: false
     },
     merchant: {}
   }

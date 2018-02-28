@@ -1,6 +1,23 @@
 <template>
   <div class="layout-padding justify-right">
     <p></p>
+    
+    <div class="row">
+      <div class="col-md-2">
+        <div class="auto">
+          <q-datetime type="date" v-bind:placeholder="$t('messages.date_from')" :debounce="500"
+                    v-model.lazy="searchDateFrom" @change="getData"/>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="auto">
+          <q-datetime type="date" v-bind:placeholder="$t('messages.date_to')" :debounce="500"
+                    v-model.lazy="searchDateTo" @change="getData"/>
+        </div>
+      </div>
+      <div class="col-md-auto"></div>
+    </div>
+    
     <q-data-table
       :data="table"
       :config="configs"
@@ -8,15 +25,9 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <!-- button to view merchant details -->
-        <q-btn small round flat v-on:click="viewMerchant(cell.row.MerchantID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="view(cell.row.ID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.merchant_details") }}
-          </q-tooltip>
-        </q-btn>
-        <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID)"  color="primary"><q-icon name="forward" />
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.ViewMerchantAccounts") }}
+            {{ $t("messages.transactions_details") }}
           </q-tooltip>
         </q-btn>
       </template>
@@ -34,24 +45,18 @@
         </q-btn>
     </div>
     
-    <!-- modal to display merchant data -->
-    <q-modal ref="layoutModalShowMerchantDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowTransactionDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
-          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowMerchantDetails.close()"><q-icon name="clear" /></q-btn>
+          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowTransactionDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            Merchant Info
+            Transaction Info
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          <q-input v-model="ViewMerchant.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
-          <q-input v-model="ViewMerchant.WhitelabelMerchantID" v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
-          <q-input v-model="ViewMerchant.Name" v-bind:stack-label="$t('messages.Name')" readonly />
-          <q-input v-model="ViewMerchant.CompanyName" v-bind:stack-label="$t('messages.CompanyName')" readonly />
-          <q-input v-model="ViewMerchant.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" readonly />
-          <q-input v-model="ViewMerchant.CompanyContactInfo" v-bind:stack-label="$t('messages.CompanyContactInfo')" readonly />
-          <q-input v-model="ViewMerchant.AgentID" v-bind:stack-label="$t('messages.AgentID')" readonly />
-          <q-input v-model="ViewMerchant.ReferenceNumber" v-bind:stack-label="$t('messages.ReferenceNumber')" readonly />
+          <q-input v-model="ViewTransaction.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
+          <q-input v-model="ViewTransaction.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
+          <q-input v-model="ViewTransaction.TransactionType" v-bind:stack-label="$t('messages.TransactionType')" readonly />
 
         </div>
       </q-modal-layout>
@@ -79,7 +84,8 @@
     QModalLayout,
     QToolbar,
     Loading,
-    Alert
+    Alert,
+    QDatetime
   } from 'quasar'
   import axios from 'axios'
   var unwatchers = null
@@ -93,31 +99,24 @@
         table: [],
         page: 1,
         searchData: '',
+        searchDateFrom: '2016-01-01',
+        searchDateTo: '2017-01-01',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '80px' },
-          { label: this.$t('messages.Name'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true },
-          // { label: this.$t('messages.WhitelabelMerchantID'), field: 'WhitelabelMerchantID', width: '150px', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: true, type: 'guid', filter: true },
           { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: true, type: 'guid', filter: true },
-          { label: this.$t('messages.CompanyName'), field: 'CompanyName', width: '150px', sort: true, type: 'string', filter: true }
+          { label: this.$t('messages.TransactionType'), field: 'TransactionType', width: '150px', sort: true, type: 'string', filter: true }
         ],
         configs: {
           columnPicker: false,
-          title: this.$t('messages.app_table_title_merchants')
+          title: this.$t('messages.app_table_title_transactions')
         },
         maxPages: 1,
-        Merchants: {
-          Name: '',
-          WhitelabelMerchantID: '',
+        Transactions: {},
+        ViewTransaction: {
           MerchantID: '',
-          CompanyName: '',
-          CompanyAddress: ''
-        },
-        ViewMerchant: {
-          Name: '',
-          WhitelabelMerchantID: '',
-          MerchantID: '',
-          CompanyName: '',
-          CompanyAddress: ''
+          AccountID: '',
+          TransactionType: ''
         },
         sort: {
           column: 'Name',
@@ -133,44 +132,39 @@
     },
     computed: {
       url () {
-        var ret = {ListPage: this.page, ListOrder: ''}
-        if (this.sort.column !== '') {
-          ret.ListOrder = this.sort.column + '.' + this.sort.dir
+        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
+        if (this.searchDateFrom !== '') {
+          ret.DateFrom = this.searchDateFrom
+        }
+        if (this.searchDateTo !== '') {
+          ret.DateTo = this.searchDateTo
         }
         return ret
       }
     },
     methods: {
       getData () {
-        // api request on page load, shows all merchants
-        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
-          this.table = response.data.Merchants
+        /* var ret = {DateFrom: this.searchDateFrom1, DateTo: this.searchDateTo1}
+        axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url, ret).then(response => {
+        // axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', ret).then(response => {
+          this.table = response.data.Transactions
           this.maxPages = response.data.Pages.TotalPages
-          this.Merchants = response.data.Merchants[0]
         }, response => {
           // error callback
-        })
+        }) */
       },
-      viewMerchant (ID) {
-        // button to show merchant data triggers this function
+      view (ID) {
         console.log(ID)
-        this.ViewMerchant.MerchantID = ID
-        this.$refs.layoutModalShowMerchantDetails.open()
-        /* var MerchantData = this.Merchants
-        var index = MerchantData.findIndex(obj => obj.MerchantID === ID)
-        console.log(index) */
-      },
-      viewAccounts (ID) {
-        this.$router.push({path: '/admin/Accounts/' + ID, param: {MerchantID: ID}})
-        return true
+        this.$refs.layoutModalShowTransactionDetails.open()
       },
       getCsv () {
-        var ret = {GetCsv: true}
-        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, GetCsv: true}
+        axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', ret).then(response => {
+          console.log(ret)
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
-          link.setAttribute('download', 'merchants-data.csv')
+          link.setAttribute('download', 'transactions-data.csv')
           document.body.appendChild(link)
           link.click()
         }, response => {
@@ -229,7 +223,8 @@
       QModalLayout,
       QToolbar,
       Loading,
-      Alert
+      Alert,
+      QDatetime
     }
   }
 </script>

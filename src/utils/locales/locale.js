@@ -10,6 +10,9 @@ module.exports = {
       Name: 'Name',
       CompanyName: 'Company name',
       CompanyAddress: 'Address',
+      CompanyContactInfo: 'Contact info',
+      AgentID: 'Agent ID',
+      ReferenceNumber: 'Rerference number',
       ShowMore: 'Show More',
       DownloadCsv: 'Download Csv',
       download_csv: 'Download Csv',
@@ -22,7 +25,14 @@ module.exports = {
       AccountID: 'Account ID',
       AccountName: 'Account name',
       AccountType: 'Account type',
-      Menu_account: 'Accounts'
+      Menu_account: 'Accounts',
+      // Transactions
+      Menu_transaction: 'Transactions',
+      transactions_details: 'Transaction Details',
+      TransactionType: 'Transaction Type',
+      app_table_title_transactions: 'Transactions List',
+      date_from: 'From date',
+      date_to: 'To date'
     }
   }
 }

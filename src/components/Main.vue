@@ -36,6 +36,10 @@
             <q-item-side icon="local post office" />
             <q-item-main v-bind:label="$t('messages.Menu_account')" sublabel="" />
           </q-side-link>
+          <q-side-link item to="/admin/Transactions" exact v-if="this.$store.getters.getShowTransactions">
+            <q-item-side icon="local post office" />
+            <q-item-main v-bind:label="$t('messages.Menu_transaction')" sublabel="" />
+          </q-side-link>
         </q-list>
       </div>
 
