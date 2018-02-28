@@ -16,7 +16,20 @@
         </q-btn>
         <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID)"  color="primary"><q-icon name="forward" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.ViewMerchantAccounts") }}
+            {{ $t("messages.view_merchant_accounts") }}
+          </q-tooltip>
+        </q-btn>
+      </template>
+      
+      <template slot="col-Closed" slot-scope="cell">
+        <q-btn v-if="cell.row.Closed" small round flat><q-icon color="red-9" name="clear" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.merchant_closed") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn v-if="!cell.row.Closed" small round flat><q-icon color="green-9" name="done" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.merchant_active") }}
           </q-tooltip>
         </q-btn>
       </template>
@@ -48,10 +61,17 @@
           <q-input v-model="ViewMerchant.WhitelabelMerchantID" v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
           <q-input v-model="ViewMerchant.Name" v-bind:stack-label="$t('messages.Name')" readonly />
           <q-input v-model="ViewMerchant.CompanyName" v-bind:stack-label="$t('messages.CompanyName')" readonly />
-          <q-input v-model="ViewMerchant.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" readonly />
+          <q-input v-model="ViewMerchant.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" type="textarea" :min-rows="1" readonly />
           <q-input v-model="ViewMerchant.CompanyContactInfo" v-bind:stack-label="$t('messages.CompanyContactInfo')" readonly />
           <q-input v-model="ViewMerchant.AgentID" v-bind:stack-label="$t('messages.AgentID')" readonly />
           <q-input v-model="ViewMerchant.ReferenceNumber" v-bind:stack-label="$t('messages.ReferenceNumber')" readonly />
+          <q-input v-model="ViewMerchant.CreatedDate" v-bind:stack-label="$t('messages.CreatedDate')" readonly />
+          <!-- <q-input v-model="ViewMerchant.Closed" v-bind:stack-label="$t('messages.MerchantClosed')" readonly /> -->
+   
+          <q-field icon="clear" v-if="ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_true')" readonly >
+          </q-field>
+          <q-field icon="done" v-if="!ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_false')" readonly >
+          </q-field>
 
         </div>
       </q-modal-layout>
@@ -94,31 +114,24 @@
         page: 1,
         searchData: '',
         columns: [
-          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '80px' },
+          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
           { label: this.$t('messages.Name'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true },
-          // { label: this.$t('messages.WhitelabelMerchantID'), field: 'WhitelabelMerchantID', width: '150px', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: true, type: 'guid', filter: true },
-          { label: this.$t('messages.CompanyName'), field: 'CompanyName', width: '150px', sort: true, type: 'string', filter: true }
+          // { label: this.$t('messages.WhitelabelMerchantID'), field: 'WhitelabelMerchantID', width: '150px', sort: false, type: 'string', filter: true },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'guid', filter: true },
+          { label: this.$t('messages.CompanyName'), field: 'CompanyName', width: '150px', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '100px', sort: true, type: 'boolean', filter: true }
         ],
         configs: {
-          columnPicker: false,
-          title: this.$t('messages.app_table_title_merchants')
+          columnPicker: true,
+          title: this.$t('messages.app_table_title_merchants'),
+          rowHeight: '50px',
+          labels: {
+            columns: 'Display columns',
+            allCols: 'Search in all columns'
+          }
         },
         maxPages: 1,
-        Merchants: {
-          Name: '',
-          WhitelabelMerchantID: '',
-          MerchantID: '',
-          CompanyName: '',
-          CompanyAddress: ''
-        },
-        ViewMerchant: {
-          Name: '',
-          WhitelabelMerchantID: '',
-          MerchantID: '',
-          CompanyName: '',
-          CompanyAddress: ''
-        },
+        ViewMerchant: {},
         sort: {
           column: 'Name',
           dir: 'asc'
@@ -146,19 +159,21 @@
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
           this.table = response.data.Merchants
           this.maxPages = response.data.Pages.TotalPages
-          this.Merchants = response.data.Merchants[0]
         }, response => {
           // error callback
         })
       },
       viewMerchant (ID) {
         // button to show merchant data triggers this function
-        console.log(ID)
-        this.ViewMerchant.MerchantID = ID
+        var index = this.table.findIndex(obj => obj.MerchantID === ID)
+        var selectedMerchant = this.table[index]
+        this.ViewMerchant = selectedMerchant
+        console.log(selectedMerchant)
+        // Convert date
+        if (this.ViewMerchant.CreatedDate !== null) {
+          this.ViewMerchant.CreatedDate = this.$d(this.$moment(this.ViewMerchant.CreatedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
         this.$refs.layoutModalShowMerchantDetails.open()
-        /* var MerchantData = this.Merchants
-        var index = MerchantData.findIndex(obj => obj.MerchantID === ID)
-        console.log(index) */
       },
       viewAccounts (ID) {
         this.$router.push({path: '/admin/Accounts/' + ID, param: {MerchantID: ID}})

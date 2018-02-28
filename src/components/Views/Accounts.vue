@@ -8,9 +8,32 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="view(cell.row.AccountID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewAccount(cell.row.AccountID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.account_details") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn small round flat v-on:click="viewTransactions(cell.row.AccountID)"  color="primary"><q-icon name="forward" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.view_accounts_transactions") }}
+          </q-tooltip>
+        </q-btn>
+      </template>
+      
+      <!-- <template slot="col-Closed" slot-scope="cell">
+        <q-icon v-if="cell.row.Closed" color="red-9" name="clear" />
+        <q-icon v-if="!cell.row.Closed" color="green-9" name="done" />
+      </template> -->
+      
+      <template slot="col-Closed" slot-scope="cell">
+        <q-btn v-if="cell.row.Closed" small round flat><q-icon color="red-9" name="clear" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.account_closed") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn v-if="!cell.row.Closed" small round flat><q-icon color="green-9" name="done" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.account_active") }}
           </q-tooltip>
         </q-btn>
       </template>
@@ -37,10 +60,19 @@
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          <q-input v-model="ViewAccount.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
           <q-input v-model="ViewAccount.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
-          <q-input v-model="ViewAccount.Name" v-bind:stack-label="$t('messages.Name')" readonly />
+          <q-input v-model="ViewAccount.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
+          <q-input v-model="ViewAccount.WhitelabelMerchantID"  v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
+          <q-input v-model="ViewAccount.Name" v-bind:stack-label="$t('messages.AccountName')" readonly />
           <q-input v-model="ViewAccount.Type" v-bind:stack-label="$t('messages.AccountType')" readonly />
+          <!-- <q-input v-model="ViewAccount.Closed" v-bind:stack-label="$t('messages.Closed')" readonly /> -->
+          <q-input v-model="ViewAccount.CreatedDate" v-bind:stack-label="$t('messages.AccountCreatedDate')" readonly />
+          <q-input v-model="ViewAccount.ProductionDate" v-bind:stack-label="$t('messages.AccountProductionDate')" readonly />
+          
+          <q-field icon="clear" v-if="ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_true')" readonly >
+          </q-field>
+          <q-field icon="done" v-if="!ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_false')" readonly >
+          </q-field>
 
         </div>
       </q-modal-layout>
@@ -83,24 +115,23 @@
         page: 1,
         searchData: '',
         columns: [
-          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '80px' },
-          { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: true, type: 'guid', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: true, type: 'guid', filter: true },
-          { label: this.$t('messages.AccountName'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true }
+          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
+          { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: false, type: 'guid', filter: true },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'guid', filter: true },
+          { label: this.$t('messages.AccountName'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '100px', sort: true, type: 'boolean', filter: true }
         ],
         configs: {
-          columnPicker: false,
-          title: this.$t('messages.app_table_title_accounts')
+          columnPicker: true,
+          title: this.$t('messages.app_table_title_accounts'),
+          rowHeight: '50px',
+          labels: {
+            columns: 'Display columns',
+            allCols: 'Search in all columns'
+          }
         },
         maxPages: 1,
-        Accounts: {},
-        ViewAccount: {
-          WhitelabelMerchantID: '',
-          MerchantID: '',
-          AccountID: '',
-          Name: '',
-          Type: ''
-        },
+        ViewAccount: {},
         sort: {
           column: 'Name',
           dir: 'asc'
@@ -125,6 +156,10 @@
           mID = ''
         }
         var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
+        // Check if sort by name or not
+        /* if (this.sort.column !== '') {
+          ret.ListOrder = this.sort.column + '.' + this.sort.dir
+        } */
         return ret
       }
     },
@@ -133,25 +168,26 @@
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
           this.table = response.data.Accounts
           this.maxPages = response.data.Pages.TotalPages
-          this.Accounts = response.data.Accounts[0]
         }, response => {
           // error callback
         })
       },
-      /* view (ID) {
-        console.log(ID)
-        this.ViewAccount.AccountID = ID
+      viewAccount (ID) {
+        var index = this.table.findIndex(obj => obj.AccountID === ID)
+        var selectedAccount = this.table[index]
+        this.ViewAccount = selectedAccount
+        console.log(selectedAccount)
+        // Convert date
+        if (this.ViewAccount.CreatedDate !== null) {
+          this.ViewAccount.CreatedDate = this.$d(this.$moment(this.ViewAccount.CreatedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewAccount.ProductionDate !== null) {
+          this.ViewAccount.ProductionDate = this.$d(this.$moment(this.ViewAccount.ProductionDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
         this.$refs.layoutModalShowAccountDetails.open()
-      }, */
-      view (ID) {
-        axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', {MerchantID: ID}).then(response => {
-          this.ViewAccount = response.data.Accounts
-          this.$refs.layoutModalShowAccountDetails.open()
-          console.log({ID: ID})
-          /* console.log(this.ViewAccount[AccountID = ID]) */
-        }, response => {
-          Alert.create({color: 'red', html: this.$t('messages.error_data'), icon: 'report_problem'})
-        })
+      },
+      viewTransactions (ID) {
+        this.$router.push({path: '/admin/Transactions/' + ID, param: {AccountID: ID}})
         return true
       },
       getCsv () {
