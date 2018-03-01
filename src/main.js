@@ -124,6 +124,7 @@ var getters = {
   getShowMerchants: state => state.menu.ShowMerchants,
   getShowAccounts: state => state.menu.ShowAccounts,
   getShowTransactions: state => state.menu.ShowTransactions,
+  getShowChargebacks: state => state.menu.ShowChargebacks,
   getMenu: state => state.menu
 }
 var mutations = {

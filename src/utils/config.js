@@ -17,7 +17,8 @@ export default {
     menu: {
       ShowMerchants: false,
       ShowAccounts: false,
-      ShowTransactions: false
+      ShowTransactions: false,
+      showChargebacks: false
     },
     merchant: {}
   }

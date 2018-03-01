@@ -72,6 +72,8 @@
           </q-field>
           <q-field icon="done" v-if="!ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_false')" readonly >
           </q-field>
+          <q-input v-if="ViewMerchant.Closed" v-model="ViewMerchant.ClosedDate" v-bind:stack-label="$t('messages.MerchantClosedDate')" readonly />
+          <q-input v-if="ViewMerchant.Closed" v-model="ViewMerchant.ClosedReason" v-bind:stack-label="$t('messages.MerchantClosedReason')" readonly />
 
         </div>
       </q-modal-layout>
@@ -172,6 +174,9 @@
         // Convert date
         if (this.ViewMerchant.CreatedDate !== null) {
           this.ViewMerchant.CreatedDate = this.$d(this.$moment(this.ViewMerchant.CreatedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewMerchant.ClosedDate !== null) {
+          this.ViewMerchant.ClosedDate = this.$d(this.$moment(this.ViewMerchant.ClosedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
         }
         this.$refs.layoutModalShowMerchantDetails.open()
       },

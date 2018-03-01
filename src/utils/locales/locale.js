@@ -26,6 +26,8 @@ module.exports = {
       MerchantClosed: 'Active',
       MerchantClosed_true: 'Merchant not active',
       MerchantClosed_false: 'Merchant is active',
+      MerchantClosedDate: 'Date of closure',
+      MerchantClosedReason: 'Reason for closure',
       // Accounts
       account_details: 'Account Details',
       view_accounts_transactions: 'Account Transactions',
@@ -41,13 +43,24 @@ module.exports = {
       AccountProductionDate: 'Date of production certification',
       AccountClosed_true: 'Account closed',
       AccountClosed_false: 'Active account',
+      AccountClosedDate: 'Date of account closure',
+      AccountClosedReason: 'Reason for closure',
       // Transactions
       Menu_transaction: 'Transactions',
       transactions_details: 'Transaction Details',
       TransactionType: 'Transaction Type',
       app_table_title_transactions: 'Transactions List',
       date_from: 'From date',
-      date_to: 'To date'
+      date_to: 'To date',
+      TransactionDateTime: 'Timestamp',
+      // Chargebacks
+      Menu_chargebacks: 'Chargebacks',
+      app_table_title_chargebacks: 'Chargebacks List',
+      chargebacks_details: 'Chargeback Details',
+      ChargebackDateTime: 'Date of chargeback',
+      ChargebackType: 'Chargeback type',
+      ChargebackAmount: 'Amount',
+      ChargebackCurrency: 'Currency'
     }
   }
 }

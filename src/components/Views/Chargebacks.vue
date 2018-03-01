@@ -25,9 +25,9 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewTransactionDetails(cell.row.ID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewChargebackDetails(cell.row.ID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.transactions_details") }}
+            {{ $t("messages.chargebacks_details") }}
           </q-tooltip>
         </q-btn>
       </template>
@@ -45,18 +45,22 @@
         </q-btn>
     </div>
     
-    <q-modal ref="layoutModalShowTransactionDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowChargebackDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
-          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowTransactionDetails.close()"><q-icon name="clear" /></q-btn>
+          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowChargebackDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            Transaction Info
+            Chargeback Info
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          <q-input v-model="ViewTransaction.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
-          <q-input v-model="ViewTransaction.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
-          <q-input v-model="ViewTransaction.TransactionType" v-bind:stack-label="$t('messages.TransactionType')" readonly />
+          <q-input v-model="ViewChargeback.ChargebackDateTime" v-bind:stack-label="$t('messages.ChargebackDateTime')" readonly />
+          <q-input v-model="ViewChargeback.ChargebackType" v-bind:stack-label="$t('messages.ChargebackType')" readonly />
+          <q-input v-model="ViewChargeback.ChargebackAmount" v-bind:stack-label="$t('messages.ChargebackAmount')" readonly />
+          <q-input v-model="ViewChargeback.ChargebackCurrency" v-bind:stack-label="$t('messages.ChargebackCurrency')" readonly />
+          <q-input v-model="ViewChargeback.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
+          <q-input v-model="ViewChargeback.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
+          
 
         </div>
       </q-modal-layout>
@@ -100,16 +104,18 @@
         page: 1,
         searchData: '',
         searchDateFrom: '2015-01-01',
-        searchDateTo: '2018-01-01',
+        searchDateTo: '2018-03-01',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '80px' },
+          { label: this.$t('messages.ChargebackDateTime'), field: 'ChargebackDateTime', width: '150px', sort: true, type: 'date', filter: true },
+          { label: this.$t('messages.ChargebackType'), field: 'ChargebackType', width: '150px', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.ChargebackAmount'), field: 'ChargebackAmount', width: '150px', sort: true, type: 'number', filter: true },
           { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'string', filter: true },
-          { label: this.$t('messages.TransactionType'), field: 'TransactionType', width: '150px', sort: true, type: 'string', filter: true }
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'string', filter: true }
         ],
         configs: {
           columnPicker: true,
-          title: this.$t('messages.app_table_title_transactions'),
+          title: this.$t('messages.app_table_title_chargebacks'),
           rowHeight: '50px',
           labels: {
             columns: 'Display columns',
@@ -117,7 +123,7 @@
           }
         },
         maxPages: 1,
-        ViewTransaction: {},
+        ViewChargeback: {},
         sort: {
           column: 'Name',
           dir: 'asc'
@@ -145,32 +151,32 @@
     methods: {
       getData () {
         // var ret = {DateFrom: this.searchDateFrom1, DateTo: this.searchDateTo1}
-        axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url).then(response => {
-        // axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', ret).then(response => {
-          this.table = response.data.Transactions
-          // this.maxPages = response.data.Pages.TotalPages
+        axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', this.url).then(response => {
+        // axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', ret).then(response => {
+          this.table = response.data.Chargebacks
           console.log(response.data.StatusCode)
+          // this.maxPages = response.data.Pages.TotalPages
         }, response => {
           // error callback
         })
       },
-      ViewTransactionDetails (ID) {
+      ViewChargebackDetails (ID) {
         console.log(ID)
-        var index = this.table.findIndex(obj => obj.TransactionDateTime === ID)
-        var selectedTransaction = this.table[index]
-        this.ViewTransaction = selectedTransaction
-        console.log(selectedTransaction)
+        var index = this.table.findIndex(obj => obj.ChargebackDateTime === ID)
+        var selectedChargeback = this.table[index]
+        this.ViewChargeback = selectedChargeback
+        console.log(selectedChargeback)
 
-        this.$refs.layoutModalShowTransactionDetails.open()
+        this.$refs.layoutModalShowChargebackDetails.open()
       },
       getCsv () {
         var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, GetCsv: true}
-        axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', ret).then(response => {
+        axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', ret).then(response => {
           console.log(ret)
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
-          link.setAttribute('download', 'transactions-data.csv')
+          link.setAttribute('download', 'chargebacks-data.csv')
           document.body.appendChild(link)
           link.click()
         }, response => {

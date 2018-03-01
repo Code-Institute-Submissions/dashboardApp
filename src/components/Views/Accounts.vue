@@ -74,6 +74,9 @@
           <q-field icon="done" v-if="!ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_false')" readonly >
           </q-field>
 
+          <q-input v-if="ViewAccount.Closed" v-model="ViewAccount.ClosedDate" v-bind:stack-label="$t('messages.AccountClosedDate')" readonly />
+          <q-input v-if="ViewAccount.Closed" v-model="ViewAccount.ClosedReason" v-bind:stack-label="$t('messages.AccountClosedReason')" readonly />
+
         </div>
       </q-modal-layout>
     </q-modal>
@@ -183,6 +186,9 @@
         }
         if (this.ViewAccount.ProductionDate !== null) {
           this.ViewAccount.ProductionDate = this.$d(this.$moment(this.ViewAccount.ProductionDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewAccount.ClosedDate !== null) {
+          this.ViewAccount.ClosedDate = this.$d(this.$moment(this.ViewAccount.ClosedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
         }
         this.$refs.layoutModalShowAccountDetails.open()
       },
