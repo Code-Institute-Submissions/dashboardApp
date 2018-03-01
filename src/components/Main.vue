@@ -1,7 +1,7 @@
 <template>
     <q-layout
       ref="layout"
-      view="hhh LpR fFf"
+      view="hHh LpR fFf"
       :left-class="{'bg-grey-2': true}"
     >
       <q-toolbar slot="header" color="primary" >

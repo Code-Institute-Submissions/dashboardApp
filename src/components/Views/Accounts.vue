@@ -43,15 +43,22 @@
       <q-pagination
         v-model="page"
         :max=maxPages
-      ></q-pagination>
+      >
+      </q-pagination>
       <q-btn small round flat v-on:click="getCsv()"><q-icon name="get app" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.download_csv") }}
           </q-tooltip>
-        </q-btn>
+      </q-btn>
+      <q-btn small round flat v-on:click="resetUrl()" v-show="showResetButton"><q-icon name="update" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.reset_url") }}
+          </q-tooltip>
+      </q-btn>
+        
     </div>
     
-    <q-modal ref="layoutModalShowAccountDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowAccountDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowAccountDetails.close()"><q-icon name="clear" /></q-btn>
@@ -69,9 +76,9 @@
           <q-input v-model="ViewAccount.CreatedDate" v-bind:stack-label="$t('messages.AccountCreatedDate')" readonly />
           <q-input v-model="ViewAccount.ProductionDate" v-bind:stack-label="$t('messages.AccountProductionDate')" readonly />
           
-          <q-field icon="clear" v-if="ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_true')" readonly >
+          <q-field icon="clear" v-if="ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_true')" :label-width="11" readonly >
           </q-field>
-          <q-field icon="done" v-if="!ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_false')" readonly >
+          <q-field icon="done" v-if="!ViewAccount.Closed" v-bind:label="$t('messages.AccountClosed_false')" :label-width="11" readonly >
           </q-field>
 
           <q-input v-if="ViewAccount.Closed" v-model="ViewAccount.ClosedDate" v-bind:stack-label="$t('messages.AccountClosedDate')" readonly />
@@ -111,6 +118,7 @@
     mounted () {
       this.setupWatchers()
       this.getData()
+      Loading.show()
     },
     data () {
       return {
@@ -119,10 +127,11 @@
         searchData: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.AccountName'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '100px', sort: true, type: 'boolean', filter: true }
+          { label: this.$t('messages.AccountName'), field: 'Name', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid', filter: true },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid', filter: true },
+          { label: this.$t('messages.AccountType_short'), field: 'Type', width: '80px', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean', filter: true }
         ],
         configs: {
           columnPicker: true,
@@ -135,10 +144,12 @@
         },
         maxPages: 1,
         ViewAccount: {},
+        MerchantID: 1,
         sort: {
           column: 'Name',
           dir: 'asc'
-        }
+        },
+        showResetButton: false
       }
     },
 
@@ -159,7 +170,7 @@
           mID = ''
         }
         var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
-        // Check if sort by name or not
+        // Sort by name or not ?
         /* if (this.sort.column !== '') {
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
         } */
@@ -168,11 +179,17 @@
     },
     methods: {
       getData () {
+        Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
           this.table = response.data.Accounts
           this.maxPages = response.data.Pages.TotalPages
+          if (response.data.Pages.TotalPages === 1) {
+            this.showResetButton = true
+          }
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
       viewAccount (ID) {
@@ -208,6 +225,11 @@
         }, response => {
           // error callback
         })
+      },
+      resetUrl () {
+        this.$router.push({path: '/admin/Accounts'})
+        this.getData()
+        this.showResetButton = false
       },
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {

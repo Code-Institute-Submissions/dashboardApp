@@ -48,7 +48,7 @@
     </div>
     
     <!-- modal to display merchant data -->
-    <q-modal ref="layoutModalShowMerchantDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowMerchantDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowMerchantDetails.close()"><q-icon name="clear" /></q-btn>
@@ -67,10 +67,9 @@
           <q-input v-model="ViewMerchant.ReferenceNumber" v-bind:stack-label="$t('messages.ReferenceNumber')" readonly />
           <q-input v-model="ViewMerchant.CreatedDate" v-bind:stack-label="$t('messages.CreatedDate')" readonly />
           <!-- <q-input v-model="ViewMerchant.Closed" v-bind:stack-label="$t('messages.MerchantClosed')" readonly /> -->
-   
-          <q-field icon="clear" v-if="ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_true')" readonly >
+          <q-field icon="clear" v-if="ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_true')" :label-width="11" readonly >
           </q-field>
-          <q-field icon="done" v-if="!ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_false')" readonly >
+          <q-field icon="done" v-if="!ViewMerchant.Closed" v-bind:label="$t('messages.MerchantClosed_false')" :label-width="11" readonly >
           </q-field>
           <q-input v-if="ViewMerchant.Closed" v-model="ViewMerchant.ClosedDate" v-bind:stack-label="$t('messages.MerchantClosedDate')" readonly />
           <q-input v-if="ViewMerchant.Closed" v-model="ViewMerchant.ClosedReason" v-bind:stack-label="$t('messages.MerchantClosedReason')" readonly />
@@ -109,6 +108,7 @@
     mounted () {
       this.setupWatchers()
       this.getData()
+      Loading.show()
     },
     data () {
       return {
@@ -117,11 +117,11 @@
         searchData: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.Name'), field: 'Name', width: '150px', sort: true, type: 'string', filter: true },
-          // { label: this.$t('messages.WhitelabelMerchantID'), field: 'WhitelabelMerchantID', width: '150px', sort: false, type: 'string', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.CompanyName'), field: 'CompanyName', width: '150px', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '100px', sort: true, type: 'boolean', filter: true }
+          { label: this.$t('messages.Name'), field: 'Name', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid', filter: true },
+          { label: this.$t('messages.CompanyName'), field: 'CompanyName', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.CompanyContactInfo'), field: 'CompanyContactInfo', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean', filter: true }
         ],
         configs: {
           columnPicker: true,
@@ -157,12 +157,15 @@
     },
     methods: {
       getData () {
+        Loading.show()
         // api request on page load, shows all merchants
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
           this.table = response.data.Merchants
           this.maxPages = response.data.Pages.TotalPages
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
       viewMerchant (ID) {

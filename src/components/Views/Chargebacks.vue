@@ -43,9 +43,15 @@
             {{ $t("messages.download_csv") }}
           </q-tooltip>
         </q-btn>
+        
+        <!-- Temporary code -->
+        <q-btn small round flat v-on:click="$refs.layoutModalShowChargebackDetails.open()"><q-icon name="zoom in" />
+        </q-btn>
+        <!-- Temporary code -->
+        
     </div>
     
-    <q-modal ref="layoutModalShowChargebackDetails" :content-css="{minWidth: '40vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowChargebackDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowChargebackDetails.close()"><q-icon name="clear" /></q-btn>
@@ -58,9 +64,14 @@
           <q-input v-model="ViewChargeback.ChargebackType" v-bind:stack-label="$t('messages.ChargebackType')" readonly />
           <q-input v-model="ViewChargeback.ChargebackAmount" v-bind:stack-label="$t('messages.ChargebackAmount')" readonly />
           <q-input v-model="ViewChargeback.ChargebackCurrency" v-bind:stack-label="$t('messages.ChargebackCurrency')" readonly />
-          <q-input v-model="ViewChargeback.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
           <q-input v-model="ViewChargeback.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
-          
+          <q-input v-model="ViewChargeback.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
+          <q-input v-model="ViewChargeback.WhitelabelMerchantID"  v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
+          <q-input v-model="ViewChargeback.TransactionType" v-bind:stack-label="$t('messages.TransactionType')" readonly />
+          <q-input v-model="ViewChargeback.TransactionValue"  v-bind:stack-label="$t('messages.TransactionValue_chargebacks')" readonly />
+          <q-input v-model="ViewChargeback.TransactionCurrency"  v-bind:stack-label="$t('messages.TransactionCurrency')" readonly />
+          <q-input v-model="ViewChargeback.ChargebackStatus"  v-bind:stack-label="$t('messages.ChargebackStatus')" readonly />
+          <q-input v-model="ViewChargeback.ChargebackDescription"  v-bind:stack-label="$t('messages.ChargebackDescription')" readonly />
 
         </div>
       </q-modal-layout>
@@ -106,12 +117,13 @@
         searchDateFrom: '2015-01-01',
         searchDateTo: '2018-03-01',
         columns: [
-          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '80px' },
-          { label: this.$t('messages.ChargebackDateTime'), field: 'ChargebackDateTime', width: '150px', sort: true, type: 'date', filter: true },
-          { label: this.$t('messages.ChargebackType'), field: 'ChargebackType', width: '150px', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.ChargebackAmount'), field: 'ChargebackAmount', width: '150px', sort: true, type: 'number', filter: true },
-          { label: this.$t('messages.AccountID'), field: 'AccountID', width: '150px', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', width: '150px', sort: false, type: 'string', filter: true }
+          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
+          { label: this.$t('messages.ChargebackDateTime_short'), field: 'ChargebackDateTime', sort: true, type: 'date', filter: true },
+          { label: this.$t('messages.ChargebackType_short'), field: 'ChargebackType', sort: true, type: 'string', filter: true },
+          { label: this.$t('messages.ChargebackAmount_short'), field: 'ChargebackAmount', sort: true, type: 'number', filter: true },
+          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid', filter: true }, */
+          { label: this.$t('messages.ChargebackStatus_short'), field: 'ChargebackStatus', sort: true, type: 'number', filter: true },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string', filter: true }
         ],
         configs: {
           columnPicker: true,
@@ -162,10 +174,10 @@
       },
       ViewChargebackDetails (ID) {
         console.log(ID)
-        var index = this.table.findIndex(obj => obj.ChargebackDateTime === ID)
-        var selectedChargeback = this.table[index]
-        this.ViewChargeback = selectedChargeback
-        console.log(selectedChargeback)
+        // Convert date
+        if (this.ViewChargeback.ChargebackDateTime !== null) {
+          this.ViewChargeback.ChargebackDateTime = this.$d(this.$moment(this.ViewChargeback.ChargebackDateTime, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
 
         this.$refs.layoutModalShowChargebackDetails.open()
       },
