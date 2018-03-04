@@ -1,9 +1,19 @@
 module.exports = {
   en: {
     messages: {
-      // Merchants
       page_title: 'Dashboard',
       Menu_merchant: 'Merchants',
+      Menu_account: 'Accounts',
+      Menu_transaction: 'Transactions',
+      Menu_chargebacks: 'Chargebacks',
+      ShowMore: 'Show More',
+      date_from: 'From date',
+      date_to: 'To date',
+      download_as_csv: 'Download data as CSV',
+      download_csv: 'Download Csv',
+      error_data: 'Can\'t show data',
+      reset_url: 'Reset selection',
+      // Merchants
       app_table_title_merchants: 'Merchants List',
       WhitelabelMerchantID: 'Whitelabel merchant ID',
       MerchantID: 'Merchant ID',
@@ -15,11 +25,7 @@ module.exports = {
       ReferenceNumber: 'Rerference number',
       CreatedDate: 'Date of creation',
       Closed: 'Closed',
-      ShowMore: 'Show More',
-      DownloadCsv: 'Download Csv',
-      download_csv: 'Download Csv',
       merchant_details: 'Merchant Details',
-      error_data: 'Can\'t show data',
       view_merchant_accounts: 'Merchant Accounts',
       merchant_active: 'Active merchant',
       merchant_closed: 'Closed merchant',
@@ -36,7 +42,6 @@ module.exports = {
       AccountName: 'Account name',
       AccountType: 'Account type',
       AccountType_short: 'Type',
-      Menu_account: 'Accounts',
       AccountClosed: 'Active',
       account_active: 'Active account',
       account_closed: 'Closed account',
@@ -46,13 +51,9 @@ module.exports = {
       AccountClosed_false: 'Active account',
       AccountClosedDate: 'Date of account closure',
       AccountClosedReason: 'Reason for closure',
-      reset_url: 'Reset selection',
       // Transactions
-      Menu_transaction: 'Transactions',
       transactions_details: 'Transaction Details',
       app_table_title_transactions: 'Transactions List',
-      date_from: 'From date',
-      date_to: 'To date',
       transaction_successful_true: 'Successful transaction',
       transaction_successful_false: 'Unsuccessful transaction',
       transaction_settled_true: 'Transaction settled',
@@ -96,7 +97,6 @@ module.exports = {
       ReservationPayoutSettlementID: 'Transaction reservation settlement ID',
       ReservationPaidOut: 'Transaction reservation paid out',
       // Chargebacks
-      Menu_chargebacks: 'Chargebacks',
       app_table_title_chargebacks: 'Chargebacks List',
       chargebacks_details: 'Chargeback Details',
       ChargebackDateTime: 'Date of chargeback',

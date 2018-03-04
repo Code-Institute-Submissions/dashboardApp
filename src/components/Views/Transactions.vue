@@ -25,7 +25,7 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewTransactionDetails(cell.row.ID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewTransactionDetails(cell.row.TransactionDateTime)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.transactions_details") }}
           </q-tooltip>
@@ -51,15 +51,15 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
-      <q-btn small round flat v-on:click="getCsv()"><q-icon name="get app" />
+      <div class="float-right" >
+        {{ $t("messages.download_as_csv") }}
+        <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.download_csv") }}
           </q-tooltip>
         </q-btn>
-        <!-- Temporary code -->
-        <q-btn small round flat v-on:click="$refs.layoutModalShowTransactionDetails.open()"><q-icon name="zoom in" />
-        </q-btn>
-        <!-- Temporary code -->
+      </div>
+
     </div>
     
     <q-modal ref="layoutModalShowTransactionDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
@@ -168,21 +168,20 @@
         searchDateTo: '2018-01-01',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date', filter: true },
-          { label: this.$t('messages.TransactionValue_transactions'), field: 'TransactionValue', sort: true, type: 'number', filter: true },
-          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string', filter: true }, */
-          { label: this.$t('messages.TransactionSuccessful_short'), field: 'TransactionSuccessful', sort: true, type: 'boolean', filter: true },
-          { label: this.$t('messages.TransactionType_short'), field: 'TransactionType', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.CardType'), field: 'CardType', sort: true, type: 'string', filter: true }
+          { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date' },
+          { label: this.$t('messages.TransactionValue_transactions'), field: 'TransactionValue', sort: true, type: 'number' },
+          { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' },
+          { label: this.$t('messages.TransactionSuccessful_short'), field: 'TransactionSuccessful', sort: true, type: 'boolean' },
+          { label: this.$t('messages.TransactionType_short'), field: 'TransactionType', sort: true, type: 'string' }
+          /* { label: this.$t('messages.CardType'), field: 'CardType', sort: true, type: 'string' } */
         ],
         configs: {
-          columnPicker: true,
+          columnPicker: false,
           title: this.$t('messages.app_table_title_transactions'),
           rowHeight: '50px',
-          labels: {
-            columns: 'Display columns',
-            allCols: 'Search in all columns'
+          bodyStyle: {
+            maxHeight: '66vh'
           }
         },
         maxPages: 1,
@@ -213,18 +212,31 @@
     },
     methods: {
       getData () {
-        // var ret = {DateFrom: this.searchDateFrom1, DateTo: this.searchDateTo1}
+        Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url).then(response => {
-        // axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', ret).then(response => {
           this.table = response.data.Transactions
-          // this.maxPages = response.data.Pages.TotalPages
+          // Fix error if there is no data to show
+          if (response.data.Pages !== null) {
+            this.maxPages = response.data.Pages.TotalPages
+          }
+          else {
+            this.maxPages = 1
+          }
+          if (this.page > this.maxPages) {
+            this.page = this.maxPages
+          }
           console.log(response.data.StatusCode)
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
-      ViewTransactionDetails (ID) {
-        console.log(ID)
+      viewTransactionDetails (ID) {
+        var index = this.table.findIndex(obj => obj.TransactionDateTime === ID)
+        var selectedTransaction = this.table[index]
+        this.ViewTransaction = selectedTransaction
+        console.log(selectedTransaction)
         // Convert date
         if (this.ViewTransaction.TransactionDateTime !== null) {
           this.ViewTransaction.TransactionDateTime = this.$d(this.$moment(this.ViewTransaction.TransactionDateTime, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
@@ -245,6 +257,7 @@
         this.$refs.layoutModalShowTransactionDetails.open()
       },
       getCsv () {
+        Loading.show()
         var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, GetCsv: true}
         axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', ret).then(response => {
           console.log(ret)
@@ -254,8 +267,10 @@
           link.setAttribute('download', 'transactions-data.csv')
           document.body.appendChild(link)
           link.click()
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
       onSort (sortColumn, sortDirection) {

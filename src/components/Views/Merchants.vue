@@ -40,11 +40,15 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
-      <q-btn small round flat v-on:click="getCsv()"><q-icon name="get app" />
+      <div class="float-right" >
+        {{ $t("messages.download_as_csv") }}
+        <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.download_csv") }}
           </q-tooltip>
         </q-btn>
+      </div>
+
     </div>
     
     <!-- modal to display merchant data -->
@@ -108,7 +112,6 @@
     mounted () {
       this.setupWatchers()
       this.getData()
-      Loading.show()
     },
     data () {
       return {
@@ -117,19 +120,18 @@
         searchData: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.Name'), field: 'Name', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.CompanyName'), field: 'CompanyName', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.CompanyContactInfo'), field: 'CompanyContactInfo', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean', filter: true }
+          { label: this.$t('messages.Name'), field: 'Name', sort: true, type: 'string' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid' },
+          { label: this.$t('messages.CompanyName'), field: 'CompanyName', sort: true, type: 'string' },
+          { label: this.$t('messages.CompanyContactInfo'), field: 'CompanyContactInfo', sort: true, type: 'string' },
+          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean' }
         ],
         configs: {
-          columnPicker: true,
+          columnPicker: false,
           title: this.$t('messages.app_table_title_merchants'),
           rowHeight: '50px',
-          labels: {
-            columns: 'Display columns',
-            allCols: 'Search in all columns'
+          bodyStyle: {
+            maxHeight: '66vh'
           }
         },
         maxPages: 1,
@@ -161,7 +163,16 @@
         // api request on page load, shows all merchants
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
           this.table = response.data.Merchants
-          this.maxPages = response.data.Pages.TotalPages
+          // Fix error if there is no data to show
+          if (response.data.Pages !== null) {
+            this.maxPages = response.data.Pages.TotalPages
+          }
+          else {
+            this.maxPages = 1
+          }
+          if (this.page > this.maxPages) {
+            this.page = this.maxPages
+          }
           Loading.hide()
         }, response => {
           // error callback
@@ -188,6 +199,7 @@
         return true
       },
       getCsv () {
+        Loading.show()
         var ret = {GetCsv: true}
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
           const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -196,8 +208,10 @@
           link.setAttribute('download', 'merchants-data.csv')
           document.body.appendChild(link)
           link.click()
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
       onSort (sortColumn, sortDirection) {

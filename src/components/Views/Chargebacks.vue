@@ -25,7 +25,7 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewChargebackDetails(cell.row.ID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewChargebackDetails(cell.row.ChargebackDateTime)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.chargebacks_details") }}
           </q-tooltip>
@@ -38,16 +38,24 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
-      <q-btn small round flat v-on:click="getCsv()"><q-icon name="get app" />
+
+      <div class="float-right" >
+        {{ $t("messages.download_as_csv") }}
+        <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.download_csv") }}
           </q-tooltip>
         </q-btn>
-        
-        <!-- Temporary code -->
-        <q-btn small round flat v-on:click="$refs.layoutModalShowChargebackDetails.open()"><q-icon name="zoom in" />
+      </div>
+      
+      <!-- <div class="float-right" style="padding-top: 10px" >
+        <q-btn icon-right="get app" color="green" no-caps rounded v-on:click="getCsv()">
+          {{ $t("messages.download_as_csv") }}
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.download_csv") }}
+          </q-tooltip>
         </q-btn>
-        <!-- Temporary code -->
+      </div> -->
         
     </div>
     
@@ -118,20 +126,19 @@
         searchDateTo: '2018-03-01',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.ChargebackDateTime_short'), field: 'ChargebackDateTime', sort: true, type: 'date', filter: true },
-          { label: this.$t('messages.ChargebackType_short'), field: 'ChargebackType', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.ChargebackAmount_short'), field: 'ChargebackAmount', sort: true, type: 'number', filter: true },
-          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid', filter: true }, */
-          { label: this.$t('messages.ChargebackStatus_short'), field: 'ChargebackStatus', sort: true, type: 'number', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string', filter: true }
+          { label: this.$t('messages.ChargebackDateTime_short'), field: 'ChargebackDateTime', sort: true, type: 'date' },
+          { label: this.$t('messages.ChargebackType_short'), field: 'ChargebackType', sort: true, type: 'string' },
+          { label: this.$t('messages.ChargebackAmount_short'), field: 'ChargebackAmount', sort: true, type: 'number' },
+          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' }, */
+          { label: this.$t('messages.ChargebackStatus_short'), field: 'ChargebackStatus', sort: true, type: 'number' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' }
         ],
         configs: {
-          columnPicker: true,
+          columnPicker: false,
           title: this.$t('messages.app_table_title_chargebacks'),
           rowHeight: '50px',
-          labels: {
-            columns: 'Display columns',
-            allCols: 'Search in all columns'
+          bodyStyle: {
+            maxHeight: '66vh'
           }
         },
         maxPages: 1,
@@ -162,18 +169,30 @@
     },
     methods: {
       getData () {
-        // var ret = {DateFrom: this.searchDateFrom1, DateTo: this.searchDateTo1}
+        Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', this.url).then(response => {
-        // axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', ret).then(response => {
           this.table = response.data.Chargebacks
-          console.log(response.data.StatusCode)
-          // this.maxPages = response.data.Pages.TotalPages
+          // Fix error if there is no data to show
+          if (response.data.Pages !== null) {
+            this.maxPages = response.data.Pages.TotalPages
+          }
+          else {
+            this.maxPages = 1
+          }
+          if (this.page > this.maxPages) {
+            this.page = this.maxPages
+          }
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
-      ViewChargebackDetails (ID) {
-        console.log(ID)
+      viewChargebackDetails (ID) {
+        var index = this.table.findIndex(obj => obj.ChargebackDateTime === ID)
+        var selectedChargeback = this.table[index]
+        this.ViewChargeback = selectedChargeback
+        console.log(selectedChargeback)
         // Convert date
         if (this.ViewChargeback.ChargebackDateTime !== null) {
           this.ViewChargeback.ChargebackDateTime = this.$d(this.$moment(this.ViewChargeback.ChargebackDateTime, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
@@ -182,6 +201,7 @@
         this.$refs.layoutModalShowChargebackDetails.open()
       },
       getCsv () {
+        Loading.show()
         var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, GetCsv: true}
         axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', ret).then(response => {
           console.log(ret)
@@ -191,8 +211,10 @@
           link.setAttribute('download', 'chargebacks-data.csv')
           document.body.appendChild(link)
           link.click()
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
       onSort (sortColumn, sortDirection) {

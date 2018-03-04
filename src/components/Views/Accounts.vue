@@ -45,17 +45,20 @@
         :max=maxPages
       >
       </q-pagination>
-      <q-btn small round flat v-on:click="getCsv()"><q-icon name="get app" />
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.download_csv") }}
-          </q-tooltip>
-      </q-btn>
       <q-btn small round flat v-on:click="resetUrl()" v-show="showResetButton"><q-icon name="update" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.reset_url") }}
           </q-tooltip>
       </q-btn>
-        
+      
+      <div class="float-right" >
+        {{ $t("messages.download_as_csv") }}
+        <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.download_csv") }}
+          </q-tooltip>
+        </q-btn>
+      </div>
     </div>
     
     <q-modal ref="layoutModalShowAccountDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
@@ -118,7 +121,6 @@
     mounted () {
       this.setupWatchers()
       this.getData()
-      Loading.show()
     },
     data () {
       return {
@@ -127,19 +129,18 @@
         searchData: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.AccountName'), field: 'Name', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid', filter: true },
-          { label: this.$t('messages.AccountType_short'), field: 'Type', width: '80px', sort: true, type: 'string', filter: true },
-          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean', filter: true }
+          { label: this.$t('messages.AccountName'), field: 'Name', sort: true, type: 'string' },
+          { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid' },
+          { label: this.$t('messages.AccountType_short'), field: 'Type', width: '80px', sort: true, type: 'string' },
+          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean' }
         ],
         configs: {
-          columnPicker: true,
+          columnPicker: false,
           title: this.$t('messages.app_table_title_accounts'),
           rowHeight: '50px',
-          labels: {
-            columns: 'Display columns',
-            allCols: 'Search in all columns'
+          bodyStyle: {
+            maxHeight: '66vh'
           }
         },
         maxPages: 1,
@@ -182,7 +183,17 @@
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
           this.table = response.data.Accounts
-          this.maxPages = response.data.Pages.TotalPages
+          // Fix error if there is no data to show
+          if (response.data.Pages !== null) {
+            this.maxPages = response.data.Pages.TotalPages
+          }
+          else {
+            this.maxPages = 1
+          }
+          if (this.page > this.maxPages) {
+            this.page = this.maxPages
+          }
+          // Show reset button
           if (response.data.Pages.TotalPages === 1) {
             this.showResetButton = true
           }
@@ -214,6 +225,7 @@
         return true
       },
       getCsv () {
+        Loading.show()
         var ret = {GetCsv: true}
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', ret).then(response => {
           const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -222,8 +234,10 @@
           link.setAttribute('download', 'accounts-data.csv')
           document.body.appendChild(link)
           link.click()
+          Loading.hide()
         }, response => {
           // error callback
+          Loading.hide()
         })
       },
       resetUrl () {
