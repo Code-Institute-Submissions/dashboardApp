@@ -17,7 +17,8 @@ export default {
       ShowMerchants: false,
       ShowAccounts: false,
       ShowTransactions: false,
-      showChargebacks: false
+      showChargebacks: false,
+      showSettlements: false
     },
     merchant: {}
   }

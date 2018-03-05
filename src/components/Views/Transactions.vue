@@ -2,20 +2,37 @@
   <div class="layout-padding justify-right">
     <p></p>
     
-    <div class="row">
-      <div class="col-md-2">
-        <div class="auto">
-          <q-datetime type="date" v-bind:placeholder="$t('messages.date_from')" :debounce="500" v-model.lazy="searchDateFrom" @change="getData" />     
-        </div>
+    <div class="row" >
+      <div class="col-md-auto">
+        <q-field >
+          <q-datetime 
+            type="date" 
+            v-bind:placeholder="$t('messages.date_from')"
+            v-bind:prefix="$t('messages.show_transactions_from_date')"
+            align="center"
+            :debounce="500" 
+            monday-first
+            format="DD.MM.YYYY"
+            v-model.lazy="searchDateFrom" 
+            @change="getData" />
+        </q-field>
       </div>
-      <div class="col-md-3">
-        <div class="auto">
-            <q-field icon="date range" >
-              <q-datetime type="date" v-bind:placeholder="$t('messages.date_to')" :debounce="500" v-model.lazy="searchDateTo" @change="getData"/>
-          </q-field>
-        </div>
+      
+      <div class="col-md-auto" style="padding-left: 3vw;">
+        <q-field >
+          <q-datetime 
+            type="date" 
+            v-bind:placeholder="$t('messages.date_to')"
+            v-bind:prefix="$t('messages.show_to_date')"
+            align="center"
+            :debounce="500" 
+            monday-first
+            format="DD.MM.YYYY"
+            v-model.lazy="searchDateTo" 
+            @change="getData" />
+        </q-field>
       </div>
-      <div class="col-md-auto"></div>
+      
     </div>
     
     <q-data-table
@@ -32,6 +49,10 @@
         </q-btn>
       </template>
 
+      <template slot="col-TransactionDateTime" slot-scope="cell">
+        {{ cell.row.TransactionDateTime | moment('utc',"DD-MM-YYYY HH:mm:ss") }}
+      </template>
+      
       <template slot="col-TransactionSuccessful" slot-scope="cell">
         <q-btn v-if="cell.row.TransactionSuccessful" small round flat><q-icon color="green-9" name="done" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
@@ -67,7 +88,7 @@
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowTransactionDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            Transaction Info
+            {{ $t("messages.transaction_info") }}
           </div>
         </q-toolbar>
         <div class="layout-padding">
@@ -150,31 +171,32 @@
     QToolbar,
     Loading,
     Alert,
-    QDatetime
+    QDatetime,
+    date
   } from 'quasar'
   import axios from 'axios'
   var unwatchers = null
   export default {
     mounted () {
       this.setupWatchers()
-      this.getData()
+      this.getDateRange()
     },
     data () {
       return {
         table: [],
         page: 1,
         searchData: '',
-        searchDateFrom: '2015-01-01',
-        searchDateTo: '2018-01-01',
+        searchDateFrom: '',
+        searchDateTo: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
           { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date' },
           { label: this.$t('messages.TransactionValue_transactions'), field: 'TransactionValue', sort: true, type: 'number' },
-          { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' },
+          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' }, */
           { label: this.$t('messages.TransactionSuccessful_short'), field: 'TransactionSuccessful', sort: true, type: 'boolean' },
-          { label: this.$t('messages.TransactionType_short'), field: 'TransactionType', sort: true, type: 'string' }
-          /* { label: this.$t('messages.CardType'), field: 'CardType', sort: true, type: 'string' } */
+          { label: this.$t('messages.TransactionType_short'), field: 'TransactionType', sort: true, type: 'string' },
+          { label: this.$t('messages.ChargebackStatus'), field: 'ChargebackStatus', sort: true, type: 'number' }
         ],
         configs: {
           columnPicker: false,
@@ -211,6 +233,15 @@
       }
     },
     methods: {
+      getDateRange () {
+        const startOfMonth = this.$moment().startOf('month').format('YYYY-MM-DD')
+        const todayDate = this.$moment().format('YYYY-MM-DD')
+        this.searchDateFrom = startOfMonth
+        this.searchDateTo = todayDate
+        console.log(this.searchDateFrom)
+        console.log(this.searchDateTo)
+        this.getData()
+      },
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url).then(response => {
@@ -326,7 +357,8 @@
       QToolbar,
       Loading,
       Alert,
-      QDatetime
+      QDatetime,
+      date
     }
   }
 </script>

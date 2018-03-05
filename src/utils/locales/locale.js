@@ -6,6 +6,12 @@ module.exports = {
       Menu_account: 'Accounts',
       Menu_transaction: 'Transactions',
       Menu_chargebacks: 'Chargebacks',
+      Menu_settlements: 'Settlements',
+      merchant_info: 'Merchant Info',
+      account_info: 'Account Info',
+      transaction_info: 'Transaction Info',
+      chargeback_info: 'Chargeback Info',
+      settlement_info: 'Settlement Info',
       ShowMore: 'Show More',
       date_from: 'From date',
       date_to: 'To date',
@@ -34,6 +40,10 @@ module.exports = {
       MerchantClosed_false: 'Merchant is active',
       MerchantClosedDate: 'Date of closure',
       MerchantClosedReason: 'Reason for closure',
+      is_merchant_active: 'Is merchant active',
+      all: 'Show all',
+      active: 'Active',
+      closed: 'Closed',
       // Accounts
       account_details: 'Account Details',
       view_accounts_transactions: 'Account Transactions',
@@ -96,6 +106,7 @@ module.exports = {
       ReservationPayoutDate: 'Transaction reservation pay out date',
       ReservationPayoutSettlementID: 'Transaction reservation settlement ID',
       ReservationPaidOut: 'Transaction reservation paid out',
+      show_transactions_from_date: 'Show transactions from &nbsp;&nbsp;',
       // Chargebacks
       app_table_title_chargebacks: 'Chargebacks List',
       chargebacks_details: 'Chargeback Details',
@@ -109,7 +120,18 @@ module.exports = {
       ChargebackStatus: 'Chargeback status',
       ChargebackStatus_short: 'CB status',
       ChargebackDescription: 'Chargeback description',
-      TransactionValue_chargebacks: 'Transaction value'
+      TransactionValue_chargebacks: 'Transaction value',
+      show_chargebacks_from_date: 'Show chargebacks from &nbsp;&nbsp;',
+      show_to_date: 'to &nbsp;&nbsp;',
+      // Settlements
+      show_settlements_from_date: 'Show settled transactions from &nbsp;&nbsp;',
+      settlement_details: 'Settlement Details',
+      SettlementID: 'Settlement ID',
+      SettlementNumber: 'Settlement number',
+      SettlementType: 'Type',
+      SettlementDateFrom: 'From date',
+      SettlementDateTo: 'To date',
+      app_table_title_settlements: 'Settlements List'
     }
   }
 }

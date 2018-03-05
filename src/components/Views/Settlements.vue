@@ -8,7 +8,7 @@
           <q-datetime 
             type="date" 
             v-bind:placeholder="$t('messages.date_from')"
-            v-bind:prefix="$t('messages.show_chargebacks_from_date')"
+            v-bind:prefix="$t('messages.show_settlements_from_date')"
             align="center"
             :debounce="500" 
             monday-first
@@ -35,8 +35,6 @@
       
     </div>
     
-
-    
     <q-data-table
       :data="table"
       :config="configs"
@@ -44,24 +42,20 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewChargebackDetails(cell.row.ChargebackDateTime)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewSettlementDetails(cell.row.ID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.chargebacks_details") }}
+            {{ $t("messages.settlement_details") }}
           </q-tooltip>
         </q-btn>
       </template>
-      
-      <template slot="col-ChargebackDateTime" slot-scope="cell">
-        {{ cell.row.ChargebackDateTime | moment('utc',"DD-MM-YYYY HH:mm:ss") }}
-      </template>
 
+      
     </q-data-table>
     <div class="auto">
       <q-pagination
         v-model="page"
         :max=maxPages
       ></q-pagination>
-   
       <div class="float-right" >
         {{ $t("messages.download_as_csv") }}
         <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
@@ -70,31 +64,19 @@
           </q-tooltip>
         </q-btn>
       </div>
-        
+
     </div>
     
-    <q-modal ref="layoutModalShowChargebackDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
+    <q-modal ref="layoutModalShowSettlementDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
-          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowChargebackDetails.close()"><q-icon name="clear" /></q-btn>
+          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowSettlementDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            {{ $t("messages.chargeback_info") }}
+            {{ $t("messages.settlement_info") }}
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          <q-input v-model="ViewChargeback.ChargebackDateTime" v-bind:stack-label="$t('messages.ChargebackDateTime')" readonly />
-          <q-input v-model="ViewChargeback.ChargebackType" v-bind:stack-label="$t('messages.ChargebackType')" readonly />
-          <q-input v-model="ViewChargeback.ChargebackAmount" v-bind:stack-label="$t('messages.ChargebackAmount')" readonly />
-          <q-input v-model="ViewChargeback.ChargebackCurrency" v-bind:stack-label="$t('messages.ChargebackCurrency')" readonly />
-          <q-input v-model="ViewChargeback.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
-          <q-input v-model="ViewChargeback.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
-          <q-input v-model="ViewChargeback.WhitelabelMerchantID"  v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
-          <q-input v-model="ViewChargeback.TransactionType" v-bind:stack-label="$t('messages.TransactionType')" readonly />
-          <q-input v-model="ViewChargeback.TransactionValue"  v-bind:stack-label="$t('messages.TransactionValue_chargebacks')" readonly />
-          <q-input v-model="ViewChargeback.TransactionCurrency"  v-bind:stack-label="$t('messages.TransactionCurrency')" readonly />
-          <q-input v-model="ViewChargeback.ChargebackStatus"  v-bind:stack-label="$t('messages.ChargebackStatus')" readonly />
-          <q-input v-model="ViewChargeback.ChargebackDescription"  v-bind:stack-label="$t('messages.ChargebackDescription')" readonly />
-
+          
         </div>
       </q-modal-layout>
     </q-modal>
@@ -139,25 +121,26 @@
         searchData: '',
         searchDateFrom: '',
         searchDateTo: '',
+        searchMerchantID1: '5f4d3bc7-8d88-47c7-8a8e-f6bbe414c2e5',
+        searchAccountID1: '08b6374f-5555-4ca1-9d3d-cf1211ef3202',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.ChargebackDateTime_short'), field: 'ChargebackDateTime', sort: true, type: 'date' },
-          { label: this.$t('messages.ChargebackType_short'), field: 'ChargebackType', sort: true, type: 'string' },
-          { label: this.$t('messages.ChargebackAmount_short'), field: 'ChargebackAmount', sort: true, type: 'number' },
-          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' }, */
-          { label: this.$t('messages.ChargebackStatus_short'), field: 'ChargebackStatus', sort: true, type: 'number' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' }
+          { label: this.$t('messages.SettlementID'), field: 'SettlementID', sort: false, type: 'string' },
+          { label: this.$t('messages.SettlementNumber'), field: 'SettlementNumber', sort: true, type: 'string' },
+          { label: this.$t('messages.SettlementType'), field: 'SettlementType', sort: false, type: 'guid' },
+          { label: this.$t('messages.SettlementDateFrom'), field: 'SettlementDateFrom', sort: true, type: 'date' },
+          { label: this.$t('messages.SettlementDateTo'), field: 'SettlementDateTo', sort: true, type: 'boolean' }
         ],
         configs: {
           columnPicker: false,
-          title: this.$t('messages.app_table_title_chargebacks'),
+          title: this.$t('messages.app_table_title_settlements'),
           rowHeight: '50px',
           bodyStyle: {
             maxHeight: '66vh'
           }
         },
         maxPages: 1,
-        ViewChargeback: {},
+        ViewSettlement: {},
         sort: {
           column: 'Name',
           dir: 'asc'
@@ -172,14 +155,26 @@
     },
     computed: {
       url () {
-        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
+        var ret = {MerchantID: this.MerchantID1, AccountID: this.AccountID1, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
         if (this.searchDateFrom !== '') {
           ret.DateFrom = this.searchDateFrom
         }
         if (this.searchDateTo !== '') {
           ret.DateTo = this.searchDateTo
         }
+        if (this.searchMerchantID !== '') {
+          ret.MerchantID = this.searchMerchantID
+        }
+        if (this.searchAccountID !== '') {
+          ret.AccountID = this.searchAccountID
+        }
         return ret
+      },
+      searchMerchantID () {
+        return this.searchMerchantID1 ? `${this.searchMerchantID1}` : ''
+      },
+      searchAccountID () {
+        return this.searchAccountID1 ? `${this.searchAccountID1}` : ''
       }
     },
     methods: {
@@ -194,45 +189,37 @@
       },
       getData () {
         Loading.show()
-        axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', this.url).then(response => {
-          this.table = response.data.Chargebacks
-          // Fix error if there is no data to show
+        axios.post(this.$config.get('auth.api2URL') + '/ListSettlements', this.url).then(response => {
+          this.table = response.data.Settlements
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
           else {
-            this.maxPages = 1
+            // this.maxPages = 1
+            console.log('SOME ERROR')
           }
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
+          console.log(response.data.StatusCode)
           Loading.hide()
         }, response => {
           // error callback
           Loading.hide()
         })
       },
-      viewChargebackDetails (ID) {
-        var index = this.table.findIndex(obj => obj.ChargebackDateTime === ID)
-        var selectedChargeback = this.table[index]
-        this.ViewChargeback = selectedChargeback
-        console.log(selectedChargeback)
-        // Convert date
-        if (this.ViewChargeback.ChargebackDateTime !== null) {
-          this.ViewChargeback.ChargebackDateTime = this.$d(this.$moment(this.ViewChargeback.ChargebackDateTime, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
-        }
-
-        this.$refs.layoutModalShowChargebackDetails.open()
+      viewSettlementsDetails (ID) {
+        this.$refs.layoutModalShowSettlementsDetails.open()
       },
       getCsv () {
         Loading.show()
-        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, GetCsv: true}
-        axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', ret).then(response => {
+        var ret = {MerchantID: this.MerchantID1, AccountID: this.AccountID1, GetCsv: true}
+        axios.post(this.$config.get('auth.api2URL') + '/ListSettlements', ret).then(response => {
           console.log(ret)
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
-          link.setAttribute('download', 'chargebacks-data.csv')
+          link.setAttribute('download', 'settlements-data.csv')
           document.body.appendChild(link)
           link.click()
           Loading.hide()

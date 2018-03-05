@@ -1,6 +1,34 @@
 <template>
   <div class="layout-padding justify-right">
     <p></p>
+    
+    <div class="row">
+      <div class="col-md-3">
+        <div class="auto">
+          <q-search v-bind:placeholder="$t('messages.Name')" :debounce="500"
+                    v-model.lazy="searchName1" @input="getData"/>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="auto">
+          <q-search v-bind:placeholder="$t('messages.CompanyName')" :debounce="500"
+                    v-model.lazy="searchCompanyName1" @input="getData"/>
+        </div>
+      </div>
+      <div class="col-md-3 " style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="select"
+            :options="selectOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.is_merchant_active')"
+          />
+        </div>
+      <div class="col-md-auto"></div>
+    </div>
+    </div>
+    
     <q-data-table
       :data="table"
       :config="configs"
@@ -57,7 +85,7 @@
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowMerchantDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            Merchant Info
+            {{ $t("messages.merchant_info") }}
           </div>
         </q-toolbar>
         <div class="layout-padding">
@@ -118,6 +146,8 @@
         table: [],
         page: 1,
         searchData: '',
+        searchName1: '',
+        searchCompanyName1: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
           { label: this.$t('messages.Name'), field: 'Name', sort: true, type: 'string' },
@@ -136,6 +166,17 @@
         },
         maxPages: 1,
         ViewMerchant: {},
+        Merchants: {
+          Name: '',
+          CompanyName: '',
+          Closed: true
+        },
+        select: 2,
+        selectOptions: [
+          { 'label': this.$t('messages.all'), 'value': 2 },
+          { 'label': this.$t('messages.active'), 'value': true },
+          { 'label': this.$t('messages.closed'), 'value': false }
+        ],
         sort: {
           column: 'Name',
           dir: 'asc'
@@ -151,10 +192,35 @@
     computed: {
       url () {
         var ret = {ListPage: this.page, ListOrder: ''}
+        /* if (this.sort.column !== '') {
+          ret.ListOrder = this.sort.column + '.' + this.sort.dir
+        } */
+        if (this.searchName !== '') {
+          ret.Name = this.searchName
+        }
+        if (this.searchCompanyName !== '') {
+          ret.CompanyName = this.searchCompanyName
+        }
+        ret.Closed = this.searchClosed
         if (this.sort.column !== '') {
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
         }
         return ret
+      },
+      searchName () {
+        return this.searchName1 ? `${this.searchName1}` : ''
+      },
+      searchCompanyName () {
+        return this.searchCompanyName1 ? `${this.searchCompanyName1}` : ''
+      },
+      searchClosed () {
+        if (this.select === true) {
+          return false
+        }
+        if (this.select === false) {
+          return true
+        }
+        return ''
       }
     },
     methods: {

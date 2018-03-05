@@ -43,7 +43,8 @@ export default new VueRouter({
         {path: 'Accounts/:MerchantID', name: 'Accounts', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
         {path: 'Transactions', name: 'TransactionsAll', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
         {path: 'Transactions/:AccountID', name: 'Transactions', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Chargebacks', name: 'Chargebacks', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}}
+        {path: 'Chargebacks', name: 'Chargebacks', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Settlements', name: 'Settlements', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
       ]
     },
     // Always leave this last one

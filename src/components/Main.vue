@@ -44,6 +44,10 @@
             <q-item-side icon="local post office" />
             <q-item-main v-bind:label="$t('messages.Menu_chargebacks')" sublabel="" />
           </q-side-link>
+          <q-side-link item to="/admin/Settlements" exact v-if="this.$store.getters.getShowSettlements">
+            <q-item-side icon="local post office" />
+            <q-item-main v-bind:label="$t('messages.Menu_settlements')" sublabel="" />
+          </q-side-link>
         </q-list>
       </div>
 

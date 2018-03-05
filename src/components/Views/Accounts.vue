@@ -51,6 +51,14 @@
           </q-tooltip>
       </q-btn>
       
+      <!-- <div class="float-right" style="padding-top: 10px" >
+        <q-btn icon-right="get app" color="green" no-caps rounded v-on:click="getCsv()">
+          {{ $t("messages.download_as_csv") }}
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.download_csv") }}
+          </q-tooltip>
+        </q-btn>
+      </div> -->
       <div class="float-right" >
         {{ $t("messages.download_as_csv") }}
         <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
@@ -66,7 +74,7 @@
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowAccountDetails.close()"><q-icon name="clear" /></q-btn>
           <div class="q-toolbar-title">
-            Account Info
+            {{ $t("messages.account_info") }}
           </div>
         </q-toolbar>
         <div class="layout-padding">
