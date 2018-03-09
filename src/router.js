@@ -42,9 +42,11 @@ export default new VueRouter({
         {path: 'Accounts', name: 'AccountsAll', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
         {path: 'Accounts/:MerchantID', name: 'Accounts', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
         {path: 'Transactions', name: 'TransactionsAll', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Transactions/:AccountID', name: 'Transactions', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Chargebacks', name: 'Chargebacks', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Settlements', name: 'Settlements', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
+        {path: 'Transactions/:MerchantID/:AccountID', name: 'Transactions', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Chargebacks', name: 'ChargebacksAll', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Chargebacks/:MerchantID/:AccountID/:PaymentGatewayReference?', name: 'Chargebacks', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Settlements', name: 'SettlementsAll', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Settlements/:MerchantID/:AccountID/:PayoutSettlementID?/:ReservationPayoutSettlementID?', name: 'Settlements', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
       ]
     },
     // Always leave this last one

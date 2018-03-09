@@ -42,7 +42,7 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewSettlementDetails(cell.row.ID)"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewSettlementDetails()"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.settlement_details") }}
           </q-tooltip>
@@ -76,7 +76,15 @@
           </div>
         </q-toolbar>
         <div class="layout-padding">
-          
+          <q-input v-model="ViewSettlement.SettlementNumber" v-bind:stack-label="$t('messages.SettlementNumber')" readonly />
+          <q-input v-model="ViewSettlement.SettlementType" v-bind:stack-label="$t('messages.SettlementType')" readonly />
+          <q-input v-model="ViewSettlement.SettlementDateFrom" v-bind:stack-label="$t('messages.SettlementDateFrom')" readonly />
+          <q-input v-model="ViewSettlement.SettlementDateTo" v-bind:stack-label="$t('messages.SettlementDateTo')" readonly />
+          <q-input v-model="ViewSettlement.TransactionsPaidSum" v-bind:stack-label="$t('messages.TransactionsPaidSum')" readonly />
+          <q-input v-model="ViewSettlement.ReservationsPaidOutSum" v-bind:stack-label="$t('messages.ReservationsPaidOutSum')" readonly />
+          <q-input v-model="ViewSettlement.CostsSum" v-bind:stack-label="$t('messages.CostsSum')" readonly />
+          <q-input v-model="ViewSettlement.Total" v-bind:stack-label="$t('messages.Total')" readonly />
+
         </div>
       </q-modal-layout>
     </q-modal>
@@ -121,15 +129,13 @@
         searchData: '',
         searchDateFrom: '',
         searchDateTo: '',
-        searchMerchantID1: '5f4d3bc7-8d88-47c7-8a8e-f6bbe414c2e5',
-        searchAccountID1: '08b6374f-5555-4ca1-9d3d-cf1211ef3202',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
           { label: this.$t('messages.SettlementID'), field: 'SettlementID', sort: false, type: 'string' },
           { label: this.$t('messages.SettlementNumber'), field: 'SettlementNumber', sort: true, type: 'string' },
-          { label: this.$t('messages.SettlementType'), field: 'SettlementType', sort: false, type: 'guid' },
-          { label: this.$t('messages.SettlementDateFrom'), field: 'SettlementDateFrom', sort: true, type: 'date' },
-          { label: this.$t('messages.SettlementDateTo'), field: 'SettlementDateTo', sort: true, type: 'boolean' }
+          { label: this.$t('messages.SettlementType_short'), field: 'SettlementType', sort: false, type: 'guid' },
+          { label: this.$t('messages.SettlementDateFrom_short'), field: 'SettlementDateFrom', sort: true, type: 'date' },
+          { label: this.$t('messages.SettlementDateTo_short'), field: 'SettlementDateTo', sort: true, type: 'boolean' }
         ],
         configs: {
           columnPicker: false,
@@ -144,7 +150,11 @@
         sort: {
           column: 'Name',
           dir: 'asc'
-        }
+        },
+        MerchantID: 1,
+        AccountID: 1,
+        PayoutSettlementID: 1,
+        ReservationPayoutSettlementID: 1
       }
     },
 
@@ -155,26 +165,50 @@
     },
     computed: {
       url () {
-        var ret = {MerchantID: this.MerchantID1, AccountID: this.AccountID1, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
+        }
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
+        }
+        var aID
+        if (this.$route.params.AccountID !== '') {
+          this.AccountID = this.$route.params.AccountID
+          this.$route.params.AccountID = ''
+        }
+        aID = this.AccountID
+        if (aID === 1) {
+          aID = ''
+        }
+        var psID
+        if (this.$route.params.PayoutSettlementID !== '') {
+          this.PayoutSettlementID = this.$route.params.PayoutSettlementID
+          this.$route.params.PayoutSettlementID = ''
+        }
+        psID = this.PayoutSettlementID
+        if (psID === 1) {
+          psID = ''
+        }
+        var rpsID
+        if (this.$route.params.ReservationPayoutSettlementID !== '') {
+          this.ReservationPayoutSettlementID = this.$route.params.ReservationPayoutSettlementID
+          this.$route.params.ReservationPayoutSettlementID = ''
+        }
+        rpsID = this.ReservationPayoutSettlementID
+        if (rpsID === 1) {
+          rpsID = ''
+        }
+        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, MerchantID: mID, AccountID: aID, PayoutSettlementID: psID, ReservationPayoutSettlementID: rpsID, ListPage: this.page, ListOrder: ''}
         if (this.searchDateFrom !== '') {
           ret.DateFrom = this.searchDateFrom
         }
         if (this.searchDateTo !== '') {
           ret.DateTo = this.searchDateTo
         }
-        if (this.searchMerchantID !== '') {
-          ret.MerchantID = this.searchMerchantID
-        }
-        if (this.searchAccountID !== '') {
-          ret.AccountID = this.searchAccountID
-        }
         return ret
-      },
-      searchMerchantID () {
-        return this.searchMerchantID1 ? `${this.searchMerchantID1}` : ''
-      },
-      searchAccountID () {
-        return this.searchAccountID1 ? `${this.searchAccountID1}` : ''
       }
     },
     methods: {
@@ -183,20 +217,18 @@
         const todayDate = this.$moment().format('YYYY-MM-DD')
         this.searchDateFrom = startOfMonth
         this.searchDateTo = todayDate
-        console.log(this.searchDateFrom)
-        console.log(this.searchDateTo)
         this.getData()
       },
       getData () {
         Loading.show()
+        console.log(this.url)
         axios.post(this.$config.get('auth.api2URL') + '/ListSettlements', this.url).then(response => {
           this.table = response.data.Settlements
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
           else {
-            // this.maxPages = 1
-            console.log('SOME ERROR')
+            this.maxPages = 1
           }
           if (this.page > this.maxPages) {
             this.page = this.maxPages
@@ -208,12 +240,22 @@
           Loading.hide()
         })
       },
-      viewSettlementsDetails (ID) {
+      viewSettlementDetails () {
+        Loading.show()
+        console.log(this.url)
+        axios.post(this.$config.get('auth.api2URL') + '/GetSettlement', this.url).then(response => {
+          this.ViewSettlement = response.data.Settlement
+          console.log(response.data.StatusCode)
+          Loading.hide()
+        }, response => {
+          // error callback
+          Loading.hide()
+        })
         this.$refs.layoutModalShowSettlementsDetails.open()
       },
       getCsv () {
         Loading.show()
-        var ret = {MerchantID: this.MerchantID1, AccountID: this.AccountID1, GetCsv: true}
+        var ret = {MerchantID: this.MerchantID, AccountID: this.AccountID, GetCsv: true}
         axios.post(this.$config.get('auth.api2URL') + '/ListSettlements', ret).then(response => {
           console.log(ret)
           const url = window.URL.createObjectURL(new Blob([response.data]))

@@ -24,6 +24,7 @@ import Vuelidate from 'vuelidate'
 import VueI18n from 'vue-i18n'
 import locales from 'utils/locales/locale.js'
 import datetime from 'utils/locales/datetime.js'
+import lodash from 'lodash'
 
 Vue.config.productionTip = false
 Vue.use(Quasar) // Install Quasar Framework
@@ -43,6 +44,7 @@ Vue.router = router
 Vue.use(VueConfig, {
   config: appConfig
 })
+Object.defineProperty(Vue.prototype, '$lodash', { value: lodash })
 // Vue.http.options.root = process.env.API_URL
 axios.interceptors.response.use(undefined, function (error) {
   if (error.response.status === 401 && error.response.statusText !== '') {
@@ -118,7 +120,8 @@ Vue.router.beforeEach((to, from, next) => {
   next()
 })
 const state = {
-  menu: JSON.parse(localStorage.getItem('menu-data'))
+  menu: JSON.parse(localStorage.getItem('menu-data')),
+  allmerchants: JSON.parse(localStorage.getItem('allmerchants-data'))
 }
 var getters = {
   getShowMerchants: state => state.menu.ShowMerchants,
@@ -126,16 +129,23 @@ var getters = {
   getShowTransactions: state => state.menu.ShowTransactions,
   getShowChargebacks: state => state.menu.ShowChargebacks,
   getShowSettlements: state => state.menu.ShowSettlements,
+  getAllmerchants: state => state.allmerchants,
   getMenu: state => state.menu
 }
 var mutations = {
   UPDATE_MENU: (state, payload) => {
     state.menu = payload
+  },
+  UPDATE_ALLMERCHANTS: (state, payload) => {
+    state.allmerchants = payload
   }
 }
 var actions = {
   updateMenu: (context, payload) => {
     context.commit('UPDATE_MENU', payload)
+  },
+  updateAllmerchants: (context, payload) => {
+    context.commit('UPDATE_ALLMERCHANTS', payload)
   }
 }
 export const store = new Vuex.Store({

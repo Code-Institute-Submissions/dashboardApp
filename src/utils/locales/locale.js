@@ -19,6 +19,7 @@ module.exports = {
       download_csv: 'Download Csv',
       error_data: 'Can\'t show data',
       reset_url: 'Reset selection',
+      alert_no_chargebacks: 'No chargeback',
       // Merchants
       app_table_title_merchants: 'Merchants List',
       WhitelabelMerchantID: 'Whitelabel merchant ID',
@@ -42,11 +43,14 @@ module.exports = {
       MerchantClosedReason: 'Reason for closure',
       is_merchant_active: 'Is merchant active',
       all: 'Show all',
-      active: 'Active',
-      closed: 'Closed',
+      active_merchant: 'Active merchants',
+      closed_merchant: 'Closed merchants',
+      merchant_select: 'Select merchant',
       // Accounts
       account_details: 'Account Details',
       view_accounts_transactions: 'Account Transactions',
+      view_accounts_chargebacks: 'Account Chargebacks',
+      view_accounts_settlements: 'Account Settlements',
       app_table_title_accounts: 'Accounts List',
       AccountID: 'Account ID',
       AccountName: 'Account name',
@@ -61,8 +65,14 @@ module.exports = {
       AccountClosed_false: 'Active account',
       AccountClosedDate: 'Date of account closure',
       AccountClosedReason: 'Reason for closure',
+      is_account_active: 'Is account active',
+      active_account: 'Active accounts',
+      closed_account: 'Closed accounts',
       // Transactions
       transactions_details: 'Transaction Details',
+      view_transaction_chargeback: 'Transaction Chargeback',
+      view_transaction_payout_settlement: 'Pay Out Settlement',
+      view_transaction_reservation_payout_settlement: 'Reservation Pay Out Settlement',
       app_table_title_transactions: 'Transactions List',
       transaction_successful_true: 'Successful transaction',
       transaction_successful_false: 'Unsuccessful transaction',
@@ -124,14 +134,21 @@ module.exports = {
       show_chargebacks_from_date: 'Show chargebacks from &nbsp;&nbsp;',
       show_to_date: 'to &nbsp;&nbsp;',
       // Settlements
+      app_table_title_settlements: 'Settlements List',
       show_settlements_from_date: 'Show settled transactions from &nbsp;&nbsp;',
       settlement_details: 'Settlement Details',
       SettlementID: 'Settlement ID',
       SettlementNumber: 'Settlement number',
-      SettlementType: 'Type',
-      SettlementDateFrom: 'From date',
-      SettlementDateTo: 'To date',
-      app_table_title_settlements: 'Settlements List'
+      SettlementType: 'Type of settlement',
+      SettlementType_short: 'Type',
+      SettlementDateFrom: 'Settled transactions from date',
+      SettlementDateFrom_short: 'From date',
+      SettlementDateTo: 'Settled transactions to date',
+      SettlementDateTo_short: 'To date',
+      TransactionsPaidSum: 'Sum of all paid transactions',
+      ReservationsPaidOutSum: 'Sum of all transaction reservations from previous settlements paid out',
+      CostsSum: 'Sum of all costs',
+      Total: 'Total settlement (paid out amount)'
     }
   }
 }

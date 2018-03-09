@@ -47,10 +47,25 @@
             {{ $t("messages.transactions_details") }}
           </q-tooltip>
         </q-btn>
+        <q-btn small round flat v-on:click="viewTransactionChargeback(cell.row.MerchantID, cell.row.AccountID, cell.row.PaymentGatewayReference, cell.row.ChargebackStatus)"  color="primary"><q-icon name="forward" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.view_transaction_chargeback") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn small round flat v-on:click="viewSettlementPayoutID(cell.row.MerchantID, cell.row.AccountID, cell.row.PayoutSettlementID)"  color="primary"><q-icon name="forward" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.view_transaction_payout_settlement") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn small round flat v-on:click="viewSettlementReservationPayoutID(cell.row.MerchantID, cell.row.AccountID, cell.row.ReservationPayoutSettlementID)"  color="primary"><q-icon name="forward" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.view_transaction_reservation_payout_settlement") }}
+          </q-tooltip>
+        </q-btn>
       </template>
 
       <template slot="col-TransactionDateTime" slot-scope="cell">
-        {{ cell.row.TransactionDateTime | moment('utc',"DD-MM-YYYY HH:mm:ss") }}
+        {{ cell.row.TransactionDateTime | moment('utc',"YYYY-MM-DD HH:mm:ss") }}
       </template>
       
       <template slot="col-TransactionSuccessful" slot-scope="cell">
@@ -93,6 +108,14 @@
         </q-toolbar>
         <div class="layout-padding">
           <q-input v-model="ViewTransaction.TransactionDateTime" v-bind:stack-label="$t('messages.TransactionDateTime')" readonly />
+          <q-datetime 
+            type="datetime" 
+            format="DD-MM-YYYY HH:mm:ss"
+            v-model="ViewTransaction.TransactionDateTime"
+            v-bind:stack-label="$t('messages.TransactionDateTime')"
+            disable
+             />
+        
           <q-input v-model="ViewTransaction.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
           <q-input v-model="ViewTransaction.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
           <q-input v-model="ViewTransaction.WhitelabelMerchantID"  v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
@@ -172,7 +195,8 @@
     Loading,
     Alert,
     QDatetime,
-    date
+    date,
+    Toast
   } from 'quasar'
   import axios from 'axios'
   var unwatchers = null
@@ -189,7 +213,7 @@
         searchDateFrom: '',
         searchDateTo: '',
         columns: [
-          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
+          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '200px' },
           { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date' },
           { label: this.$t('messages.TransactionValue_transactions'), field: 'TransactionValue', sort: true, type: 'number' },
           /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
@@ -211,7 +235,9 @@
         sort: {
           column: 'Name',
           dir: 'asc'
-        }
+        },
+        MerchantID: 1,
+        AccountID: 1
       }
     },
 
@@ -222,7 +248,25 @@
     },
     computed: {
       url () {
-        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
+        }
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
+        }
+        var aID
+        if (this.$route.params.AccountID !== '') {
+          this.AccountID = this.$route.params.AccountID
+          this.$route.params.AccountID = ''
+        }
+        aID = this.AccountID
+        if (aID === 1) {
+          aID = ''
+        }
+        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, MerchantID: mID, AccountID: aID, ListPage: this.page, ListOrder: ''}
         if (this.searchDateFrom !== '') {
           ret.DateFrom = this.searchDateFrom
         }
@@ -238,15 +282,12 @@
         const todayDate = this.$moment().format('YYYY-MM-DD')
         this.searchDateFrom = startOfMonth
         this.searchDateTo = todayDate
-        console.log(this.searchDateFrom)
-        console.log(this.searchDateTo)
         this.getData()
       },
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url).then(response => {
           this.table = response.data.Transactions
-          // Fix error if there is no data to show
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
@@ -269,6 +310,21 @@
         this.ViewTransaction = selectedTransaction
         console.log(selectedTransaction)
         // Convert date
+        /* if (this.ViewTransaction.TransactionDateTime !== null) {
+          this.ViewTransaction.TransactionDateTime = this.$d(this.$moment(this.ViewTransaction.TransactionDateTime, 'YYYY-DD-MM HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewTransaction.SettledDateTime !== null) {
+          this.ViewTransaction.SettledDateTime = this.$d(this.$moment(this.ViewTransaction.SettledDateTime, 'YYYY-DD-MM HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewTransaction.PayoutDate !== null) {
+          this.ViewTransaction.PayoutDate = this.$d(this.$moment(this.ViewTransaction.PayoutDate, 'YYYY-DD-MM HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewTransaction.ReservationHeldDate !== null) {
+          this.ViewTransaction.ReservationHeldDate = this.$d(this.$moment(this.ViewTransaction.ReservationHeldDate, 'YYYY-DD-MM HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewTransaction.ReservationPayoutDate !== null) {
+          this.ViewTransaction.ReservationPayoutDate = this.$d(this.$moment(this.ViewTransaction.ReservationPayoutDate, 'YYYY-DD-MM HH:mm:ss').local(), 'long')
+        } */
         if (this.ViewTransaction.TransactionDateTime !== null) {
           this.ViewTransaction.TransactionDateTime = this.$d(this.$moment(this.ViewTransaction.TransactionDateTime, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
         }
@@ -286,6 +342,23 @@
         }
 
         this.$refs.layoutModalShowTransactionDetails.open()
+      },
+      viewTransactionChargeback (MerchantID, AccountID, PaymentGatewayReference, ChargebackStatus) {
+        if (ChargebackStatus > 0) {
+          this.$router.push({path: '/admin/Chargebacks/' + MerchantID + '/' + AccountID + '/' + PaymentGatewayReference, param: {MerchantID: MerchantID, AccountID: AccountID, PaymentGatewayReference: PaymentGatewayReference}})
+          return true
+        }
+        else {
+          Toast.create({color: 'orange', html: this.$t('messages.alert_no_chargebacks'), icon: 'report_problem'})
+        }
+      },
+      viewSettlementPayoutID (MerchantID, AccountID, PayoutSettlementID) {
+        this.$router.push({path: '/admin/Settlements/' + MerchantID + '/' + AccountID + '/' + PayoutSettlementID, param: {MerchantID: MerchantID, AccountID: AccountID, PayoutSettlementID: PayoutSettlementID}})
+        return true
+      },
+      viewSettlementReservationPayoutID (MerchantID, AccountID, ReservationPayoutSettlementID) {
+        this.$router.push({path: '/admin/Settlements/' + MerchantID + '/' + AccountID + '/' + ReservationPayoutSettlementID, param: {MerchantID: MerchantID, AccountID: AccountID, ReservationPayoutSettlementID: ReservationPayoutSettlementID}})
+        return true
       },
       getCsv () {
         Loading.show()
@@ -358,7 +431,8 @@
       Loading,
       Alert,
       QDatetime,
-      date
+      date,
+      Toast
     }
   }
 </script>

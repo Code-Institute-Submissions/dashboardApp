@@ -17,9 +17,15 @@ export default {
       ShowMerchants: false,
       ShowAccounts: false,
       ShowTransactions: false,
-      showChargebacks: false,
-      showSettlements: false
+      ShowChargebacks: false,
+      ShowSettlements: false
     },
-    merchant: {}
+    merchant: {},
+    allmerchants: {
+      Merchants: [],
+      Pages: {
+        TotalPages: 1
+      }
+    }
   }
 }

@@ -3,23 +3,23 @@
     <p></p>
     
     <div class="row">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <div class="auto">
           <q-search v-bind:placeholder="$t('messages.Name')" :debounce="500"
-                    v-model.lazy="searchName1" @input="getData"/>
+                    v-model.lazy="searchName1" @input="getData" />
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-6">
         <div class="auto">
           <q-search v-bind:placeholder="$t('messages.CompanyName')" :debounce="500"
-                    v-model.lazy="searchCompanyName1" @input="getData"/>
+                    v-model.lazy="searchCompanyName1" @input="getData" />
         </div>
       </div>
-      <div class="col-md-3 " style="margin-top: -10px">
+      <div class="col-md-4 " style="margin-top: -10px">
         <div class="auto">
           <q-select
-            v-model="select"
-            :options="selectOptions"
+            v-model="selectType"
+            :options="selectTypeOptions"
             @change="getData"
             style="width: 100%"
             v-bind:float-label="$t('messages.is_merchant_active')"
@@ -36,7 +36,6 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <!-- button to view merchant details -->
         <q-btn small round flat v-on:click="viewMerchant(cell.row.MerchantID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.merchant_details") }}
@@ -79,7 +78,6 @@
 
     </div>
     
-    <!-- modal to display merchant data -->
     <q-modal ref="layoutModalShowMerchantDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
@@ -166,16 +164,11 @@
         },
         maxPages: 1,
         ViewMerchant: {},
-        Merchants: {
-          Name: '',
-          CompanyName: '',
-          Closed: true
-        },
-        select: 2,
-        selectOptions: [
-          { 'label': this.$t('messages.all'), 'value': 2 },
-          { 'label': this.$t('messages.active'), 'value': true },
-          { 'label': this.$t('messages.closed'), 'value': false }
+        selectType: 0,
+        selectTypeOptions: [
+          { 'label': this.$t('messages.all'), 'value': 0 },
+          { 'label': this.$t('messages.active_merchant'), 'value': 1 },
+          { 'label': this.$t('messages.closed_merchant'), 'value': 2 }
         ],
         sort: {
           column: 'Name',
@@ -192,16 +185,15 @@
     computed: {
       url () {
         var ret = {ListPage: this.page, ListOrder: ''}
-        /* if (this.sort.column !== '') {
-          ret.ListOrder = this.sort.column + '.' + this.sort.dir
-        } */
         if (this.searchName !== '') {
           ret.Name = this.searchName
         }
         if (this.searchCompanyName !== '') {
           ret.CompanyName = this.searchCompanyName
         }
-        ret.Closed = this.searchClosed
+        if (this.selectType !== '') {
+          ret.Type = this.selectType
+        }
         if (this.sort.column !== '') {
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
         }
@@ -212,24 +204,13 @@
       },
       searchCompanyName () {
         return this.searchCompanyName1 ? `${this.searchCompanyName1}` : ''
-      },
-      searchClosed () {
-        if (this.select === true) {
-          return false
-        }
-        if (this.select === false) {
-          return true
-        }
-        return ''
       }
     },
     methods: {
       getData () {
         Loading.show()
-        // api request on page load, shows all merchants
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.url).then(response => {
           this.table = response.data.Merchants
-          // Fix error if there is no data to show
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
@@ -239,18 +220,25 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
+          if (this.searchCompanyName1 !== '') {
+            var myArr = this.table
+            var inputTerm = this.searchCompanyName1
+            var results = _.filter(myArr, o => _.includes(o.CompanyName, inputTerm))
+            console.log(results)
+            this.table = results
+          }
           Loading.hide()
         }, response => {
           // error callback
           Loading.hide()
         })
+        Loading.hide()
       },
       viewMerchant (ID) {
-        // button to show merchant data triggers this function
+        console.log(this.table)
         var index = this.table.findIndex(obj => obj.MerchantID === ID)
         var selectedMerchant = this.table[index]
         this.ViewMerchant = selectedMerchant
-        console.log(selectedMerchant)
         // Convert date
         if (this.ViewMerchant.CreatedDate !== null) {
           this.ViewMerchant.CreatedDate = this.$d(this.$moment(this.ViewMerchant.CreatedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')

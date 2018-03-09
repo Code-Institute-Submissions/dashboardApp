@@ -1,6 +1,43 @@
 <template>
   <div class="layout-padding justify-right">
     <p></p>
+    
+    <div class="row">
+      <div class="col-md-4">
+        <div class="auto">
+          <q-search v-bind:placeholder="$t('messages.AccountName')" :debounce="500"
+                    v-model.lazy="searchName1" @input="getData" />
+        </div>
+      </div>
+      <div class="col-md-4 " style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectType"
+            :options="selectTypeOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.is_account_active')"
+          />
+        </div>
+    </div>
+      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowAccounts">
+        <div class="auto">
+          <q-select
+            v-model="MerchantID"
+            :options="selectMerchantOptions"
+            @input="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.merchant_select')"
+          />
+          <q-pagination
+            v-model="mPage"
+            :max=mPages
+          />
+        </div>
+      </div>
+      <div class="col-md-auto"></div>
+    </div>
+    
     <q-data-table
       :data="table"
       :config="configs"
@@ -13,17 +50,22 @@
             {{ $t("messages.account_details") }}
           </q-tooltip>
         </q-btn>
-        <q-btn small round flat v-on:click="viewTransactions(cell.row.AccountID)"  color="primary"><q-icon name="forward" />
+        <q-btn small round flat v-on:click="viewTransactions(cell.row.MerchantID, cell.row.AccountID)"  color="primary"><q-icon name="forward" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.view_accounts_transactions") }}
           </q-tooltip>
         </q-btn>
+        <q-btn small round flat v-on:click="viewChargebacks(cell.row.MerchantID, cell.row.AccountID)"  color="primary"><q-icon name="forward" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.view_accounts_chargebacks") }}
+          </q-tooltip>
+        </q-btn>
+        <q-btn small round flat v-on:click="viewSettlements(cell.row.MerchantID, cell.row.AccountID)"  color="primary"><q-icon name="forward" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.view_accounts_settlements") }}
+          </q-tooltip>
+        </q-btn>
       </template>
-      
-      <!-- <template slot="col-Closed" slot-scope="cell">
-        <q-icon v-if="cell.row.Closed" color="red-9" name="clear" />
-        <q-icon v-if="!cell.row.Closed" color="green-9" name="done" />
-      </template> -->
       
       <template slot="col-Closed" slot-scope="cell">
         <q-btn v-if="cell.row.Closed" small round flat><q-icon color="red-9" name="clear" />
@@ -129,17 +171,20 @@
     mounted () {
       this.setupWatchers()
       this.getData()
+      this.getMerchantData()
     },
     data () {
       return {
         table: [],
         page: 1,
+        maxPages: 1,
         searchData: '',
+        searchName1: '',
         columns: [
-          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
+          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '200px' },
           { label: this.$t('messages.AccountName'), field: 'Name', sort: true, type: 'string' },
           { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: true, type: 'guid' },
           { label: this.$t('messages.AccountType_short'), field: 'Type', width: '80px', sort: true, type: 'string' },
           { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean' }
         ],
@@ -151,20 +196,31 @@
             maxHeight: '66vh'
           }
         },
-        maxPages: 1,
-        ViewAccount: {},
-        MerchantID: 1,
         sort: {
-          column: 'Name',
+          column: 'AccountID',
           dir: 'asc'
         },
-        showResetButton: false
+        ViewAccount: {},
+        showResetButton: false,
+        selectType: 0,
+        selectTypeOptions: [
+          { 'label': this.$t('messages.all'), 'value': 0 },
+          { 'label': this.$t('messages.active_account'), 'value': 1 },
+          { 'label': this.$t('messages.closed_account'), 'value': 2 }
+        ],
+        MerchantID: 1,
+        selectMerchantOptions: [],
+        mData: [],
+        mPage: 1,
+        mPages: 1
       }
     },
-
     watch: {
       page () {
         this.getData()
+      },
+      mPage () {
+        this.getMerchantData()
       }
     },
     computed: {
@@ -179,10 +235,32 @@
           mID = ''
         }
         var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
-        // Sort by name or not ?
-        /* if (this.sort.column !== '') {
+        if (this.searchName1 !== '') {
+          ret.Name = this.searchName1
+        }
+        if (this.selectType !== '') {
+          ret.Type = this.selectType
+        }
+        if (this.sort.column !== '') {
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
-        } */
+        }
+        return ret
+      },
+      searchName () {
+        return this.searchName1 ? `${this.searchName1}` : ''
+      },
+
+      urlM () {
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
+        }
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
+        }
+        var ret = {ListPage: this.mPage, ListOrder: '', MerchantID: mID}
         return ret
       }
     },
@@ -191,7 +269,6 @@
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
           this.table = response.data.Accounts
-          // Fix error if there is no data to show
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
@@ -201,9 +278,42 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
+          if (this.searchName1 !== '') {
+            var myArr = this.table
+            var inputTerm = this.searchName1
+            var results = _.filter(myArr, o => _.includes(o.Name, inputTerm))
+            console.log(results)
+            this.table = results
+          }
+          Loading.hide()
           // Show reset button
-          if (response.data.Pages.TotalPages === 1) {
+          if (response.data.Pages.TotalPages < 2) {
             this.showResetButton = true
+          }
+        }, response => {
+          // error callback
+          Loading.hide()
+        })
+      },
+      getMerchantData () {
+        Loading.show()
+        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.urlM).then(response => {
+          this.mData = response.data.Merchants
+          console.log(this.mData)
+          if (response.data.Pages !== null) {
+            this.mPages = response.data.Pages.TotalPages
+          }
+          else {
+            this.mPages = 1
+          }
+          if (this.mPage > this.mPages) {
+            this.mPage = this.mPages
+          }
+          var data = response.data.Merchants
+          this.selectMerchantOptions = []
+          this.selectMerchantOptions.push({'label': this.$t('messages.all'), value: 1})
+          for (var entry in data) {
+            this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
           }
           Loading.hide()
         }, response => {
@@ -215,7 +325,6 @@
         var index = this.table.findIndex(obj => obj.AccountID === ID)
         var selectedAccount = this.table[index]
         this.ViewAccount = selectedAccount
-        console.log(selectedAccount)
         // Convert date
         if (this.ViewAccount.CreatedDate !== null) {
           this.ViewAccount.CreatedDate = this.$d(this.$moment(this.ViewAccount.CreatedDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
@@ -228,8 +337,16 @@
         }
         this.$refs.layoutModalShowAccountDetails.open()
       },
-      viewTransactions (ID) {
-        this.$router.push({path: '/admin/Transactions/' + ID, param: {AccountID: ID}})
+      viewTransactions (MerchantID, AccountID) {
+        this.$router.push({path: '/admin/Transactions/' + MerchantID + '/' + AccountID, param: {MerchantID: MerchantID, AccountID: AccountID}})
+        return true
+      },
+      viewChargebacks (MerchantID, AccountID) {
+        this.$router.push({path: '/admin/Chargebacks/' + MerchantID + '/' + AccountID, param: {MerchantID: MerchantID, AccountID: AccountID}})
+        return true
+      },
+      viewSettlements (MerchantID, AccountID) {
+        this.$router.push({path: '/admin/Settlements/' + MerchantID + '/' + AccountID, param: {MerchantID: MerchantID, AccountID: AccountID}})
         return true
       },
       getCsv () {
@@ -250,6 +367,7 @@
       },
       resetUrl () {
         this.$router.push({path: '/admin/Accounts'})
+        this.MerchantID = 1
         this.getData()
         this.showResetButton = false
       },

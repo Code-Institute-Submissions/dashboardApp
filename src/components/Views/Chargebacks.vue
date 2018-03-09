@@ -161,7 +161,10 @@
         sort: {
           column: 'Name',
           dir: 'asc'
-        }
+        },
+        MerchantID: 1,
+        AccountID: 1,
+        PaymentGatewayReference: 1
       }
     },
 
@@ -172,7 +175,34 @@
     },
     computed: {
       url () {
-        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
+        }
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
+        }
+        var aID
+        if (this.$route.params.AccountID !== '') {
+          this.AccountID = this.$route.params.AccountID
+          this.$route.params.AccountID = ''
+        }
+        aID = this.AccountID
+        if (aID === 1) {
+          aID = ''
+        }
+        var pgRef
+        if (this.$route.params.PaymentGatewayReference !== '') {
+          this.PaymentGatewayReference = this.$route.params.PaymentGatewayReference
+          this.$route.params.PaymentGatewayReference = ''
+        }
+        pgRef = this.PaymentGatewayReference
+        if (pgRef === 1) {
+          pgRef = ''
+        }
+        var ret = {MerchantID: mID, AccountID: aID, PaymentGatewayReference: pgRef, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
         if (this.searchDateFrom !== '') {
           ret.DateFrom = this.searchDateFrom
         }
@@ -188,15 +218,12 @@
         const todayDate = this.$moment().format('YYYY-MM-DD')
         this.searchDateFrom = startOfMonth
         this.searchDateTo = todayDate
-        console.log(this.searchDateFrom)
-        console.log(this.searchDateTo)
         this.getData()
       },
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', this.url).then(response => {
           this.table = response.data.Chargebacks
-          // Fix error if there is no data to show
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
@@ -206,6 +233,7 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
+          console.log(response.data.StatusCode)
           Loading.hide()
         }, response => {
           // error callback
