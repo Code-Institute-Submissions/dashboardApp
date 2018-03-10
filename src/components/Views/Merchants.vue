@@ -41,7 +41,7 @@
             {{ $t("messages.merchant_details") }}
           </q-tooltip>
         </q-btn>
-        <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID)"  color="primary"><q-icon name="forward" />
+        <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID, page)"  color="primary"><q-icon name="forward" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.view_merchant_accounts") }}
           </q-tooltip>
@@ -173,7 +173,8 @@
         sort: {
           column: 'Name',
           dir: 'asc'
-        }
+        },
+        MerchantID: 1
       }
     },
 
@@ -248,8 +249,9 @@
         }
         this.$refs.layoutModalShowMerchantDetails.open()
       },
-      viewAccounts (ID) {
-        this.$router.push({path: '/admin/Accounts/' + ID, param: {MerchantID: ID}})
+      viewAccounts (MerchantID, page) {
+        page = this.page
+        this.$router.push({name: 'Accounts', params: {MerchantID: MerchantID, mPage: page}})
         return true
       },
       getCsv () {

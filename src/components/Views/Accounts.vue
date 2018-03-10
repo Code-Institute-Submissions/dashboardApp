@@ -261,11 +261,16 @@
           mID = ''
         }
         var ret = {ListPage: this.mPage, ListOrder: '', MerchantID: mID}
+        if (this.$route.params.mPage !== '') {
+          ret.ListPage = this.$route.params.mPage
+          // this.$route.params.mPage = ''
+        }
         return ret
       }
     },
     methods: {
       getData () {
+        console.log(this.url)
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
           this.table = response.data.Accounts
@@ -296,6 +301,7 @@
         })
       },
       getMerchantData () {
+        console.log(this.urlM)
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.urlM).then(response => {
           this.mData = response.data.Merchants
@@ -338,15 +344,15 @@
         this.$refs.layoutModalShowAccountDetails.open()
       },
       viewTransactions (MerchantID, AccountID) {
-        this.$router.push({path: '/admin/Transactions/' + MerchantID + '/' + AccountID, param: {MerchantID: MerchantID, AccountID: AccountID}})
+        this.$router.push({name: 'Transactions', params: {MerchantID: MerchantID, AccountID: AccountID}})
         return true
       },
       viewChargebacks (MerchantID, AccountID) {
-        this.$router.push({path: '/admin/Chargebacks/' + MerchantID + '/' + AccountID, param: {MerchantID: MerchantID, AccountID: AccountID}})
+        this.$router.push({name: 'Chargebacks', params: {MerchantID: MerchantID, AccountID: AccountID}})
         return true
       },
       viewSettlements (MerchantID, AccountID) {
-        this.$router.push({path: '/admin/Settlements/' + MerchantID + '/' + AccountID, param: {MerchantID: MerchantID, AccountID: AccountID}})
+        this.$router.push({name: 'Settlements', params: {MerchantID: MerchantID, AccountID: AccountID}})
         return true
       },
       getCsv () {

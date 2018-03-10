@@ -6,13 +6,13 @@ export default {
     accessTokenTypeID: 1,
     apiKey: '04dc7792-9d07-43a3-b508-94d240df955b',
     userTypeID: 1,
-    returnURL: 'http://localhost:22555/Mailer/',
-    // returnURL: 'http://bufo-test.info/Mailer/',
+    returnURL: 'http://localhost:22555/PGWL/',
+    // returnURL: 'http://bufo-test.info/PGWL/',
     sdkUrl: 'https://auth-test.paywiser.eu/auth/sdk.js',
     refreshUrl: 'https://api-auth-test.paywiser.eu/RequestNewAccessToken'
   },
   runtime: {
-    base: '/Mailer/',
+    base: '/PGWL/',
     menu: {
       ShowMerchants: false,
       ShowAccounts: false,

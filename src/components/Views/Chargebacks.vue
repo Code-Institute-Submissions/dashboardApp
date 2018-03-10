@@ -203,12 +203,6 @@
           pgRef = ''
         }
         var ret = {MerchantID: mID, AccountID: aID, PaymentGatewayReference: pgRef, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
-        if (this.searchDateFrom !== '') {
-          ret.DateFrom = this.searchDateFrom
-        }
-        if (this.searchDateTo !== '') {
-          ret.DateTo = this.searchDateTo
-        }
         return ret
       }
     },
@@ -223,6 +217,7 @@
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', this.url).then(response => {
+          console.log(this.url)
           this.table = response.data.Chargebacks
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages

@@ -2,6 +2,37 @@
   <div class="layout-padding justify-right">
     <p></p>
     
+    <div class="row">
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
+        <div class="auto">
+          <q-select
+            v-model="AccountID"
+            :options="selectAccountOptions"
+            @input="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.account_select')"
+          />
+        </div>
+      </div>
+      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
+        <div class="auto">
+          <q-select
+            v-model="MerchantID"
+            :options="selectMerchantOptions"
+            @input="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.merchant_select')"
+          />
+          <q-pagination
+            v-model="mPage"
+            :max=mPages
+          />
+        </div>
+      </div>
+    </div>
+    
     <div class="row" >
       <div class="col-md-auto">
         <q-field >
@@ -31,8 +62,7 @@
             v-model.lazy="searchDateTo" 
             @change="getData" />
         </q-field>
-      </div>
-      
+      </div>    
     </div>
     
     <q-data-table
@@ -204,6 +234,7 @@
     mounted () {
       this.setupWatchers()
       this.getDateRange()
+      /* this.getMerchantData() */
     },
     data () {
       return {
@@ -237,13 +268,21 @@
           dir: 'asc'
         },
         MerchantID: 1,
-        AccountID: 1
+        selectMerchantOptions: [],
+        mData: [],
+        mPage: 1,
+        mPages: 1,
+        AccountID: 1,
+        selectAccountOptions: []
       }
     },
 
     watch: {
       page () {
         this.getData()
+      /* },
+      mPage () {
+        this.getMerchantData() */
       }
     },
     computed: {
@@ -267,13 +306,32 @@
           aID = ''
         }
         var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, MerchantID: mID, AccountID: aID, ListPage: this.page, ListOrder: ''}
-        if (this.searchDateFrom !== '') {
-          ret.DateFrom = this.searchDateFrom
-        }
-        if (this.searchDateTo !== '') {
-          ret.DateTo = this.searchDateTo
+        if (this.sort.column !== '') {
+          ret.ListOrder = this.sort.column + '.' + this.sort.dir
         }
         return ret
+      /* },
+      urlM () {
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
+        }
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
+        }
+        var aID
+        if (this.$route.params.AccountID !== '') {
+          this.AccountID = this.$route.params.AccountID
+          this.$route.params.AccountID = ''
+        }
+        aID = this.AccountID
+        if (aID === 1) {
+          aID = ''
+        }
+        var ret = {MerchantID: mID, AccountID: aID}
+        return ret */
       }
     },
     methods: {
@@ -285,6 +343,7 @@
         this.getData()
       },
       getData () {
+        console.log(this.url)
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url).then(response => {
           this.table = response.data.Transactions
@@ -304,6 +363,33 @@
           Loading.hide()
         })
       },
+      /* getMerchantData () {
+        console.log(this.urlM)
+        Loading.show()
+        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.urlM).then(response => {
+          this.mData = response.data.Merchants
+          console.log(this.mData)
+          if (response.data.Pages !== null) {
+            this.mPages = response.data.Pages.TotalPages
+          }
+          else {
+            this.mPages = 1
+          }
+          if (this.mPage > this.mPages) {
+            this.mPage = this.mPages
+          }
+          var data = response.data.Merchants
+          this.selectMerchantOptions = []
+          this.selectMerchantOptions.push({'label': this.$t('messages.all'), value: 1})
+          for (var entry in data) {
+            this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
+          }
+          Loading.hide()
+        }, response => {
+          // error callback
+          Loading.hide()
+        })
+      }, */
       viewTransactionDetails (ID) {
         var index = this.table.findIndex(obj => obj.TransactionDateTime === ID)
         var selectedTransaction = this.table[index]
@@ -344,20 +430,20 @@
         this.$refs.layoutModalShowTransactionDetails.open()
       },
       viewTransactionChargeback (MerchantID, AccountID, PaymentGatewayReference, ChargebackStatus) {
-        if (ChargebackStatus > 0) {
-          this.$router.push({path: '/admin/Chargebacks/' + MerchantID + '/' + AccountID + '/' + PaymentGatewayReference, param: {MerchantID: MerchantID, AccountID: AccountID, PaymentGatewayReference: PaymentGatewayReference}})
-          return true
-        }
+        /* if (ChargebackStatus > 0) { */
+        this.$router.push({name: 'Chargebacks', params: {MerchantID: MerchantID, AccountID: AccountID, PaymentGatewayReference: 'PaymentGatewayReference'}})
+        return true
+        /* }
         else {
           Toast.create({color: 'orange', html: this.$t('messages.alert_no_chargebacks'), icon: 'report_problem'})
-        }
+        } */
       },
       viewSettlementPayoutID (MerchantID, AccountID, PayoutSettlementID) {
-        this.$router.push({path: '/admin/Settlements/' + MerchantID + '/' + AccountID + '/' + PayoutSettlementID, param: {MerchantID: MerchantID, AccountID: AccountID, PayoutSettlementID: PayoutSettlementID}})
+        this.$router.push({name: 'Settlements', params: {MerchantID: MerchantID, AccountID: AccountID, PayoutSettlementID: PayoutSettlementID}})
         return true
       },
       viewSettlementReservationPayoutID (MerchantID, AccountID, ReservationPayoutSettlementID) {
-        this.$router.push({path: '/admin/Settlements/' + MerchantID + '/' + AccountID + '/' + ReservationPayoutSettlementID, param: {MerchantID: MerchantID, AccountID: AccountID, ReservationPayoutSettlementID: ReservationPayoutSettlementID}})
+        this.$router.push({name: 'Settlements', params: {MerchantID: MerchantID, AccountID: AccountID, ReservationPayoutSettlementID: ReservationPayoutSettlementID}})
         return true
       },
       getCsv () {

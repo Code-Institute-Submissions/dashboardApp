@@ -201,13 +201,8 @@
         if (rpsID === 1) {
           rpsID = ''
         }
-        var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, MerchantID: mID, AccountID: aID, PayoutSettlementID: psID, ReservationPayoutSettlementID: rpsID, ListPage: this.page, ListOrder: ''}
-        if (this.searchDateFrom !== '') {
-          ret.DateFrom = this.searchDateFrom
-        }
-        if (this.searchDateTo !== '') {
-          ret.DateTo = this.searchDateTo
-        }
+        var sID = psID || rpsID
+        var ret = {MerchantID: mID, AccountID: aID, SettlementID: sID, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo}
         return ret
       }
     },
@@ -223,6 +218,7 @@
         Loading.show()
         console.log(this.url)
         axios.post(this.$config.get('auth.api2URL') + '/ListSettlements', this.url).then(response => {
+          console.log(response.data.StatusCode)
           this.table = response.data.Settlements
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
@@ -233,14 +229,13 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
-          console.log(response.data.StatusCode)
           Loading.hide()
         }, response => {
           // error callback
           Loading.hide()
         })
       },
-      viewSettlementDetails () {
+      /* viewSettlementDetails () {
         Loading.show()
         console.log(this.url)
         axios.post(this.$config.get('auth.api2URL') + '/GetSettlement', this.url).then(response => {
@@ -252,7 +247,7 @@
           Loading.hide()
         })
         this.$refs.layoutModalShowSettlementsDetails.open()
-      },
+      }, */
       getCsv () {
         Loading.show()
         var ret = {MerchantID: this.MerchantID, AccountID: this.AccountID, GetCsv: true}

@@ -20,6 +20,8 @@ module.exports = {
       error_data: 'Can\'t show data',
       reset_url: 'Reset selection',
       alert_no_chargebacks: 'No chargeback',
+      merchant_select: 'Select merchant',
+      account_select: 'Select account',
       // Merchants
       app_table_title_merchants: 'Merchants List',
       WhitelabelMerchantID: 'Whitelabel merchant ID',
@@ -45,7 +47,6 @@ module.exports = {
       all: 'Show all',
       active_merchant: 'Active merchants',
       closed_merchant: 'Closed merchants',
-      merchant_select: 'Select merchant',
       // Accounts
       account_details: 'Account Details',
       view_accounts_transactions: 'Account Transactions',
