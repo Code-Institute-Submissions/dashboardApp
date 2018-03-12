@@ -13,7 +13,7 @@
       </q-btn>
 
       <q-toolbar-title>
-        Mailer app
+        Dashboard app
       </q-toolbar-title>
     </q-toolbar>
     <!--

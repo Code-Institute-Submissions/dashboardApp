@@ -26,7 +26,7 @@
           />
         </div>
       <div class="col-md-auto"></div>
-    </div>
+     </div>
     </div>
     
     <q-data-table
@@ -41,7 +41,7 @@
             {{ $t("messages.merchant_details") }}
           </q-tooltip>
         </q-btn>
-        <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID, page)"  color="primary"><q-icon name="forward" />
+        <q-btn small round flat v-on:click="viewAccounts(cell.row.MerchantID)"  color="primary"><q-icon name="forward" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.view_merchant_accounts") }}
           </q-tooltip>
@@ -130,7 +130,8 @@
     QModalLayout,
     QToolbar,
     Loading,
-    Alert
+    Alert,
+    Dialog
   } from 'quasar'
   import axios from 'axios'
   var unwatchers = null
@@ -236,7 +237,6 @@
         Loading.hide()
       },
       viewMerchant (ID) {
-        console.log(this.table)
         var index = this.table.findIndex(obj => obj.MerchantID === ID)
         var selectedMerchant = this.table[index]
         this.ViewMerchant = selectedMerchant
@@ -249,9 +249,8 @@
         }
         this.$refs.layoutModalShowMerchantDetails.open()
       },
-      viewAccounts (MerchantID, page) {
-        page = this.page
-        this.$router.push({name: 'Accounts', params: {MerchantID: MerchantID, mPage: page}})
+      viewAccounts (MerchantID) {
+        this.$router.push({name: 'Accounts', params: {MerchantID: MerchantID}})
         return true
       },
       getCsv () {
@@ -322,7 +321,8 @@
       QModalLayout,
       QToolbar,
       Loading,
-      Alert
+      Alert,
+      Dialog
     }
   }
 </script>

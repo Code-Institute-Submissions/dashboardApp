@@ -27,11 +27,8 @@
             :options="selectMerchantOptions"
             @input="getData"
             style="width: 100%"
+            filter
             v-bind:float-label="$t('messages.merchant_select')"
-          />
-          <q-pagination
-            v-model="mPage"
-            :max=mPages
           />
         </div>
       </div>
@@ -210,17 +207,12 @@
         ],
         MerchantID: 1,
         selectMerchantOptions: [],
-        mData: [],
-        mPage: 1,
         mPages: 1
       }
     },
     watch: {
       page () {
         this.getData()
-      },
-      mPage () {
-        this.getMerchantData()
       }
     },
     computed: {
@@ -235,8 +227,8 @@
           mID = ''
         }
         var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
-        if (this.searchName1 !== '') {
-          ret.Name = this.searchName1
+        if (this.searchName !== '') {
+          ret.Name = this.searchName
         }
         if (this.selectType !== '') {
           ret.Type = this.selectType
@@ -248,29 +240,10 @@
       },
       searchName () {
         return this.searchName1 ? `${this.searchName1}` : ''
-      },
-
-      urlM () {
-        var mID
-        if (this.$route.params.MerchantID !== '') {
-          this.MerchantID = this.$route.params.MerchantID
-          this.$route.params.MerchantID = ''
-        }
-        mID = this.MerchantID
-        if (mID === 1) {
-          mID = ''
-        }
-        var ret = {ListPage: this.mPage, ListOrder: '', MerchantID: mID}
-        if (this.$route.params.mPage !== '') {
-          ret.ListPage = this.$route.params.mPage
-          // this.$route.params.mPage = ''
-        }
-        return ret
       }
     },
     methods: {
       getData () {
-        console.log(this.url)
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
           this.table = response.data.Accounts
@@ -279,6 +252,7 @@
           }
           else {
             this.maxPages = 1
+            this.showResetButton = true
           }
           if (this.page > this.maxPages) {
             this.page = this.maxPages
@@ -290,42 +264,28 @@
             console.log(results)
             this.table = results
           }
-          Loading.hide()
           // Show reset button
           if (response.data.Pages.TotalPages < 2) {
             this.showResetButton = true
           }
+          Loading.hide()
         }, response => {
           // error callback
           Loading.hide()
         })
       },
       getMerchantData () {
-        console.log(this.urlM)
-        Loading.show()
-        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', this.urlM).then(response => {
-          this.mData = response.data.Merchants
-          console.log(this.mData)
-          if (response.data.Pages !== null) {
-            this.mPages = response.data.Pages.TotalPages
-          }
-          else {
-            this.mPages = 1
-          }
-          if (this.mPage > this.mPages) {
-            this.mPage = this.mPages
-          }
-          var data = response.data.Merchants
-          this.selectMerchantOptions = []
-          this.selectMerchantOptions.push({'label': this.$t('messages.all'), value: 1})
-          for (var entry in data) {
-            this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
-          }
-          Loading.hide()
-        }, response => {
-          // error callback
-          Loading.hide()
-        })
+        var i = 1
+        do {
+          var ret = {ListPage: i, ListOrder: 'Name.asc'}
+          axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+            var data = response.data.Merchants
+            for (var entry in data) {
+              this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
+            }
+          })
+          i++
+        } while (i < 10)
       },
       viewAccount (ID) {
         var index = this.table.findIndex(obj => obj.AccountID === ID)

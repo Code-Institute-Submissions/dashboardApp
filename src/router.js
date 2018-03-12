@@ -40,14 +40,14 @@ export default new VueRouter({
         {path: 'Home', name: 'Home', component: load('Views/Home'), meta: {auth: {roles: 'admin'}}},
         {path: 'Merchants', name: 'Merchants', component: load('Views/Merchants'), meta: {auth: {roles: 'admin'}}},
         {path: 'Accounts', name: 'AccountsAll', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Accounts/:MerchantID/:mPage?', name: 'Accounts', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Accounts/:MerchantID', name: 'Accounts', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
+        // {path: 'Accounts/:MerchantID/:mPage?', name: 'Accounts', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},
         {path: 'Transactions', name: 'TransactionsAll', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Transactions/:MerchantID/:AccountID/:mPage?/:MerchantName?', name: 'Transactions', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
+        {path: 'Transactions/:MerchantID/:AccountID', name: 'Transactions', component: load('Views/Transactions'), meta: {auth: {roles: 'admin'}}},
         {path: 'Chargebacks', name: 'ChargebacksAll', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
         {path: 'Chargebacks/:MerchantID/:AccountID/:PaymentGatewayReference?', name: 'Chargebacks', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Settlements', name: 'SettlementsAll', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}},
         {path: 'Settlements/:MerchantID/:AccountID', name: 'Settlements', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Settlements/:MerchantID/:AccountID/SettlementID', name: 'Settlement', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
+        {path: 'Settlements/:MerchantID/:AccountID/:SettlementID', name: 'SettlementID', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
       ]
     },
     // Always leave this last one

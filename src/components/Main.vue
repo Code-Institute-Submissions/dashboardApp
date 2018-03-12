@@ -15,7 +15,7 @@
         <q-toolbar-title>
           {{ $t("messages.page_title") }}
         </q-toolbar-title>
-
+        
         <q-btn flat @click="$router.replace('/logout')" >
           <q-icon name="exit to app" />
         </q-btn>
@@ -89,10 +89,8 @@ import {
   QSlider,
   QTooltip,
   QCollapsible,
-  clone,
   QSearch
 } from 'quasar'
-import axios from 'axios'
 export default {
   name: 'index',
   components: {
@@ -122,13 +120,11 @@ export default {
     QSlider,
     QTooltip,
     QCollapsible,
-    clone,
     QSearch
   },
   data () {
     return {
-      menu: [],
-      allMerchants: []
+      menu: []
     }
   },
   mounted () {
@@ -142,38 +138,11 @@ export default {
     document.cookie = 'default_auth_token='
     document.cookie = 'impersonate_auth_token='
     this.menu = this.$store.getters.getMenu
-    this.allMerchants = this.$store.getters.getAllMerchants
-
-    var ret = {ListPage: '', ListOrder: ''}
-    axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
-      if (response.data !== null) {
-        this.$auth.token('allmerchants-data', JSON.stringify(response.data))
-        this.$store.dispatch('updateAllmerchants', response.data)
-        var conf = this.$config.all()
-        conf.runtime.allMerchants = response.data
-        this.$config.replace(conf)
-        console.log(response.data)
-        console.log(this.$config.get('runtime.allmerchants'))
-      }
-      else {
-        this.$auth.token('allmerchants-data', '')
-      }
-    }, response => {
-      // error callback
-    })
   },
   methods: {
     getDataM () {
-      /* this.select = localStorage.getItem('merchant-data-select')
-      this.selectOptions = []
-      var conf = JSON.parse(localStorage.getItem('merchant-data'))
-      for (var entry in conf) {
-        this.selectOptions.push({'label': conf[entry].Name, value: conf[entry].ID})
-      } */
       console.log(this.$config.get('runtime.menu'))
       this.menu = this.$config.get('runtime.menu')
-      console.log(this.$config.get('runtime.allmerchants'))
-      this.allMerchants = this.$config.get('runtime.allmerchants')
     }
   }
 }

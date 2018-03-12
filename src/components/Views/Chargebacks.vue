@@ -2,6 +2,35 @@
   <div class="layout-padding justify-right">
     <p></p>
     
+    <div class="row">
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
+        <div class="auto">
+          <q-select
+            v-model="AccountID"
+            :options="selectAccountOptions"
+            @input="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.account_select')"
+            :disabled=selectAccountDisabled
+          />
+        </div>
+      </div>
+      <div class="col-md-6 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
+        <div class="auto">
+          <q-select
+            v-model="MerchantID"
+            :options="selectMerchantOptions"
+            @change="getData"
+            style="width: 100%"
+            filter
+            v-bind:float-label="$t('messages.merchant_select')"
+          />
+        </div>
+      </div>
+    </div>
+    
     <div class="row" >
       <div class="col-md-auto">
         <q-field >
@@ -32,10 +61,7 @@
             @change="getData" />
         </q-field>
       </div>
-      
     </div>
-    
-
     
     <q-data-table
       :data="table"
@@ -131,6 +157,7 @@
     mounted () {
       this.setupWatchers()
       this.getDateRange()
+      this.getMerchantData()
     },
     data () {
       return {
@@ -163,7 +190,10 @@
           dir: 'asc'
         },
         MerchantID: 1,
+        selectMerchantOptions: [],
         AccountID: 1,
+        selectAccountOptions: [],
+        selectAccountDisabled: false,
         PaymentGatewayReference: 1
       }
     },
@@ -171,6 +201,10 @@
     watch: {
       page () {
         this.getData()
+      },
+      MerchantID () {
+        this.getData()
+        this.checkAccountDisabled()
       }
     },
     computed: {
@@ -217,7 +251,6 @@
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListChargebacks', this.url).then(response => {
-          console.log(this.url)
           this.table = response.data.Chargebacks
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
@@ -228,11 +261,43 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
-          console.log(response.data.StatusCode)
           Loading.hide()
         }, response => {
           // error callback
           Loading.hide()
+        })
+      },
+      getMerchantData () {
+        var i = 1
+        do {
+          var ret = {ListPage: i, ListOrder: 'Name.asc'}
+          axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+            var data = response.data.Merchants
+            for (var entry in data) {
+              this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
+            }
+          })
+          i++
+        } while (i < 10)
+      },
+      checkAccountDisabled () {
+        if (typeof this.MerchantID !== 'string') {
+          this.selectAccountDisabled = true
+          this.selectAccountOptions.length = 0
+        }
+        if (typeof this.MerchantID === 'string') {
+          this.selectAccountDisabled = false
+          this.getAccountData()
+        }
+      },
+      getAccountData () {
+        var ret = {MerchantID: this.MerchantID}
+        axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', ret).then(response => {
+          var data = response.data.Accounts
+          this.selectAccountOptions = []
+          for (var entry in data) {
+            this.selectAccountOptions.push({'label': data[entry].Name, value: data[entry].AccountID})
+          }
         })
       },
       viewChargebackDetails (ID) {

@@ -2,6 +2,35 @@
   <div class="layout-padding justify-right">
     <p></p>
     
+    <div class="row">
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
+        <div class="auto">
+          <q-select
+            v-model="AccountID"
+            :options="selectAccountOptions"
+            @input="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.account_select')"
+            :disabled=selectAccountDisabled
+          />
+        </div>
+      </div>
+      <div class="col-md-6 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
+        <div class="auto">
+          <q-select
+            v-model="MerchantID"
+            :options="selectMerchantOptions"
+            @change="getData"
+            style="width: 100%"
+            filter
+            v-bind:float-label="$t('messages.merchant_select')"
+          />
+        </div>
+      </div>
+    </div>
+    
     <div class="row" >
       <div class="col-md-auto">
         <q-field >
@@ -121,6 +150,7 @@
     mounted () {
       this.setupWatchers()
       this.getDateRange()
+      this.getMerchantData()
     },
     data () {
       return {
@@ -152,15 +182,21 @@
           dir: 'asc'
         },
         MerchantID: 1,
+        selectMerchantOptions: [],
         AccountID: 1,
-        PayoutSettlementID: 1,
-        ReservationPayoutSettlementID: 1
+        selectAccountOptions: [],
+        selectAccountDisabled: false,
+        SettlementID: 1
       }
     },
 
     watch: {
       page () {
         this.getData()
+      },
+      MerchantID () {
+        this.getData()
+        this.checkAccountDisabled()
       }
     },
     computed: {
@@ -183,26 +219,47 @@
         if (aID === 1) {
           aID = ''
         }
-        var psID
-        if (this.$route.params.PayoutSettlementID !== '') {
-          this.PayoutSettlementID = this.$route.params.PayoutSettlementID
-          this.$route.params.PayoutSettlementID = ''
+        var sID
+        if (this.$route.params.SettlementID !== '') {
+          this.SettlementID = this.$route.params.SettlementID
+          this.$route.params.SettlementID = ''
         }
-        psID = this.PayoutSettlementID
-        if (psID === 1) {
-          psID = ''
+        sID = this.SettlementID
+        if (sID === 1) {
+          sID = ''
         }
-        var rpsID
-        if (this.$route.params.ReservationPayoutSettlementID !== '') {
-          this.ReservationPayoutSettlementID = this.$route.params.ReservationPayoutSettlementID
-          this.$route.params.ReservationPayoutSettlementID = ''
+        var ret = {MerchantID: mID, AccountID: aID, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo}
+        return ret
+      },
+      urlID () {
+        var mID
+        if (this.$route.params.MerchantID !== '') {
+          this.MerchantID = this.$route.params.MerchantID
+          this.$route.params.MerchantID = ''
         }
-        rpsID = this.ReservationPayoutSettlementID
-        if (rpsID === 1) {
-          rpsID = ''
+        mID = this.MerchantID
+        if (mID === 1) {
+          mID = ''
         }
-        var sID = psID || rpsID
-        var ret = {MerchantID: mID, AccountID: aID, SettlementID: sID, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo}
+        var aID
+        if (this.$route.params.AccountID !== '') {
+          this.AccountID = this.$route.params.AccountID
+          this.$route.params.AccountID = ''
+        }
+        aID = this.AccountID
+        if (aID === 1) {
+          aID = ''
+        }
+        var sID
+        if (this.$route.params.SettlementID !== '') {
+          this.SettlementID = this.$route.params.SettlementID
+          this.$route.params.SettlementID = ''
+        }
+        sID = this.SettlementID
+        if (sID === 1) {
+          sID = ''
+        }
+        var ret = {MerchantID: mID, AccountID: aID, SettlementID: sID}
         return ret
       }
     },
@@ -230,15 +287,52 @@
             this.page = this.maxPages
           }
           Loading.hide()
+          if (typeof this.SettlementID === 'string') {
+            this.viewSettlementDetails()
+          }
         }, response => {
           // error callback
           Loading.hide()
         })
+        Loading.hide()
       },
-      /* viewSettlementDetails () {
+      getMerchantData () {
+        var i = 1
+        do {
+          var ret = {ListPage: i, ListOrder: 'Name.asc'}
+          axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+            var data = response.data.Merchants
+            for (var entry in data) {
+              this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
+            }
+          })
+          i++
+        } while (i < 10)
+      },
+      checkAccountDisabled () {
+        if (typeof this.MerchantID !== 'string') {
+          this.selectAccountDisabled = true
+          this.selectAccountOptions.length = 0
+        }
+        if (typeof this.MerchantID === 'string') {
+          this.selectAccountDisabled = false
+          this.getAccountData()
+        }
+      },
+      getAccountData () {
+        var ret = {MerchantID: this.MerchantID}
+        axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', ret).then(response => {
+          var data = response.data.Accounts
+          this.selectAccountOptions = []
+          for (var entry in data) {
+            this.selectAccountOptions.push({'label': data[entry].Name, value: data[entry].AccountID})
+          }
+        })
+      },
+      viewSettlementDetails () {
         Loading.show()
         console.log(this.url)
-        axios.post(this.$config.get('auth.api2URL') + '/GetSettlement', this.url).then(response => {
+        axios.post(this.$config.get('auth.api2URL') + '/GetSettlement', this.urlID).then(response => {
           this.ViewSettlement = response.data.Settlement
           console.log(response.data.StatusCode)
           Loading.hide()
@@ -247,7 +341,7 @@
           Loading.hide()
         })
         this.$refs.layoutModalShowSettlementsDetails.open()
-      }, */
+      },
       getCsv () {
         Loading.show()
         var ret = {MerchantID: this.MerchantID, AccountID: this.AccountID, GetCsv: true}

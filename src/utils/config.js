@@ -20,12 +20,6 @@ export default {
       ShowChargebacks: false,
       ShowSettlements: false
     },
-    merchant: {},
-    allmerchants: {
-      Merchants: [],
-      Pages: {
-        TotalPages: 1
-      }
-    }
+    merchant: {}
   }
 }
