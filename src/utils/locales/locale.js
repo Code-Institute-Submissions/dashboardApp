@@ -18,8 +18,10 @@ module.exports = {
       download_as_csv: 'Download data as CSV',
       download_csv: 'Download Csv',
       error_data: 'Can\'t show data',
+      logout: 'Log out',
       reset_url: 'Reset selection',
       alert_no_chargebacks: 'No chargeback',
+      alert_no_accounts: 'No accounts',
       merchant_select: 'Select merchant',
       account_select: 'Select account',
       // Merchants
@@ -136,7 +138,7 @@ module.exports = {
       show_to_date: 'to &nbsp;&nbsp;',
       // Settlements
       app_table_title_settlements: 'Settlements List',
-      show_settlements_from_date: 'Show settled transactions from &nbsp;&nbsp;',
+      show_settlements_from_date: 'Settled transactions from &nbsp;&nbsp;',
       settlement_details: 'Settlement Details',
       SettlementID: 'Settlement ID',
       SettlementNumber: 'Settlement number',

@@ -20,6 +20,7 @@ export default {
       ShowChargebacks: false,
       ShowSettlements: false
     },
+    mtotalpages: 1,
     merchant: {}
   }
 }

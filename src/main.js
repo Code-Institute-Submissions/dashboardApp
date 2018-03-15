@@ -125,7 +125,8 @@ Vue.router.beforeEach((to, from, next) => {
   next()
 })
 const state = {
-  menu: JSON.parse(localStorage.getItem('menu-data'))
+  menu: JSON.parse(localStorage.getItem('menu-data')),
+  mtotalpages: JSON.parse(localStorage.getItem('mtotalpages-data'))
 }
 var getters = {
   getShowMerchants: state => state.menu.ShowMerchants,
@@ -133,16 +134,23 @@ var getters = {
   getShowTransactions: state => state.menu.ShowTransactions,
   getShowChargebacks: state => state.menu.ShowChargebacks,
   getShowSettlements: state => state.menu.ShowSettlements,
-  getMenu: state => state.menu
+  getMenu: state => state.menu,
+  getMtotalpages: state => state.mtotalpages
 }
 var mutations = {
   UPDATE_MENU: (state, payload) => {
     state.menu = payload
+  },
+  UPDATE_MTOTALPAGES: (state, payload) => {
+    state.mtotalpages = payload
   }
 }
 var actions = {
   updateMenu: (context, payload) => {
     context.commit('UPDATE_MENU', payload)
+  },
+  updateMtotalpages: (context, payload) => {
+    context.commit('UPDATE_MTOTALPAGES', payload)
   }
 }
 export const store = new Vuex.Store({

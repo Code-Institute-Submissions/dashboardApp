@@ -3,19 +3,19 @@
     <p></p>
     
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="auto">
           <q-search v-bind:placeholder="$t('messages.Name')" :debounce="500"
                     v-model.lazy="searchName1" @input="getData" />
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-3">
         <div class="auto">
           <q-search v-bind:placeholder="$t('messages.CompanyName')" :debounce="500"
                     v-model.lazy="searchCompanyName1" @input="getData" />
         </div>
       </div>
-      <div class="col-md-4 " style="margin-top: -10px">
+      <div class="col-md-3 " style="margin-top: -10px">
         <div class="auto">
           <q-select
             v-model="selectType"
@@ -82,9 +82,9 @@
       <q-modal-layout>
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowMerchantDetails.close()"><q-icon name="clear" /></q-btn>
-          <div class="q-toolbar-title">
+          <q-toolbar-title>
             {{ $t("messages.merchant_info") }}
-          </div>
+          </q-toolbar-title>
         </q-toolbar>
         <div class="layout-padding">
           <q-input v-model="ViewMerchant.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
@@ -129,6 +129,7 @@
     QModal,
     QModalLayout,
     QToolbar,
+    QToolbarTitle,
     Loading,
     Alert,
     Dialog
@@ -222,13 +223,13 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
-          if (this.searchCompanyName1 !== '') {
+          /* if (this.searchCompanyName1 !== '') {
             var myArr = this.table
             var inputTerm = this.searchCompanyName1
             var results = _.filter(myArr, o => _.includes(o.CompanyName, inputTerm))
             console.log(results)
             this.table = results
-          }
+          } */
           Loading.hide()
         }, response => {
           // error callback
@@ -320,6 +321,7 @@
       QModal,
       QModalLayout,
       QToolbar,
+      QToolbarTitle,
       Loading,
       Alert,
       Dialog

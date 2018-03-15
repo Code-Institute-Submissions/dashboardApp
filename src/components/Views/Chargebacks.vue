@@ -3,35 +3,6 @@
     <p></p>
     
     <div class="row">
-      <div class="col-md-2">
-      </div>
-      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
-        <div class="auto">
-          <q-select
-            v-model="AccountID"
-            :options="selectAccountOptions"
-            @input="getData"
-            style="width: 100%"
-            v-bind:float-label="$t('messages.account_select')"
-            :disabled=selectAccountDisabled
-          />
-        </div>
-      </div>
-      <div class="col-md-6 " style="margin-top: -10px" v-if="this.$store.getters.getShowTransactions">
-        <div class="auto">
-          <q-select
-            v-model="MerchantID"
-            :options="selectMerchantOptions"
-            @change="getData"
-            style="width: 100%"
-            filter
-            v-bind:float-label="$t('messages.merchant_select')"
-          />
-        </div>
-      </div>
-    </div>
-    
-    <div class="row" >
       <div class="col-md-auto">
         <q-field >
           <q-datetime 
@@ -47,7 +18,7 @@
         </q-field>
       </div>
       
-      <div class="col-md-auto" style="padding-left: 3vw;">
+      <div class="col-md-auto" style="padding-left: 1vw; padding-right: 2vw;">
         <q-field >
           <q-datetime 
             type="date" 
@@ -60,6 +31,31 @@
             v-model.lazy="searchDateTo" 
             @change="getData" />
         </q-field>
+      </div>
+      <div class="col-md-3" style="margin-top: -10px" v-if="this.$store.getters.getShowChargebacks">
+        <div class="auto">
+          <q-select
+            v-model="MerchantID"
+            :options="selectMerchantOptions"
+            @change="getData"
+            style="width: 100%"
+            filter
+            filter-placeholder="Search..."
+            v-bind:float-label="$t('messages.merchant_select')"
+          />
+        </div>
+      </div>
+      <div class="col-md-auto" style="margin-top: -10px; min-width: 150px;" v-if="this.$store.getters.getShowChargebacks">
+        <div class="auto">
+          <q-select
+            v-model="AccountID"
+            :options="selectAccountOptions"
+            @input="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.account_select')"
+            :disabled=selectAccountDisabled
+          />
+        </div>
       </div>
     </div>
     
@@ -103,9 +99,9 @@
       <q-modal-layout>
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowChargebackDetails.close()"><q-icon name="clear" /></q-btn>
-          <div class="q-toolbar-title">
+          <q-toolbar-title>
             {{ $t("messages.chargeback_info") }}
-          </div>
+          </q-toolbar-title>
         </q-toolbar>
         <div class="layout-padding">
           <q-input v-model="ViewChargeback.ChargebackDateTime" v-bind:stack-label="$t('messages.ChargebackDateTime')" readonly />
@@ -146,6 +142,7 @@
     QModal,
     QModalLayout,
     QToolbar,
+    QToolbarTitle,
     Loading,
     Alert,
     QDatetime,
@@ -238,6 +235,10 @@
         }
         var ret = {MerchantID: mID, AccountID: aID, PaymentGatewayReference: pgRef, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
         return ret
+      },
+      mPages () {
+        var ret = (this.$config.get('runtime.mtotalpages'))
+        return ret
       }
     },
     methods: {
@@ -268,6 +269,7 @@
         })
       },
       getMerchantData () {
+        var mP = this.mPages
         var i = 1
         do {
           var ret = {ListPage: i, ListOrder: 'Name.asc'}
@@ -278,7 +280,7 @@
             }
           })
           i++
-        } while (i < 10)
+        } while (i <= mP)
       },
       checkAccountDisabled () {
         if (typeof this.MerchantID !== 'string') {
@@ -380,6 +382,7 @@
       QModal,
       QModalLayout,
       QToolbar,
+      QToolbarTitle,
       Loading,
       Alert,
       QDatetime,

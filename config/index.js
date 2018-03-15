@@ -18,8 +18,8 @@ module.exports = {
 
   build: {
     env: require('./prod.env'),
-    // publicPath: '/PGWL/',
-    publicPath: 'http://bufo-test.info/PGWL/',
+    publicPath: '/PGWL/',
+    // publicPath: 'http://bufo-test.info/PGWL/',
     productionSourceMap: false,
 
     // Remove unused CSS

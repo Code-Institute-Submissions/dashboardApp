@@ -13,7 +13,7 @@
       </q-btn>
 
       <q-toolbar-title>
-        Dashboard app
+        Dashboard
       </q-toolbar-title>
     </q-toolbar>
     <!--

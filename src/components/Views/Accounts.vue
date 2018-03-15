@@ -3,13 +3,13 @@
     <p></p>
     
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="auto">
           <q-search v-bind:placeholder="$t('messages.AccountName')" :debounce="500"
                     v-model.lazy="searchName1" @input="getData" />
         </div>
       </div>
-      <div class="col-md-4 " style="margin-top: -10px">
+      <div class="col-md-3" style="margin-top: -10px">
         <div class="auto">
           <q-select
             v-model="selectType"
@@ -20,7 +20,7 @@
           />
         </div>
     </div>
-      <div class="col-md-4 " style="margin-top: -10px" v-if="this.$store.getters.getShowAccounts">
+      <div class="col-md-3" style="margin-top: -10px; padding-left: 2vw;" v-if="this.$store.getters.getShowAccounts">
         <div class="auto">
           <q-select
             v-model="MerchantID"
@@ -28,11 +28,11 @@
             @input="getData"
             style="width: 100%"
             filter
+            filter-placeholder="Search..."
             v-bind:float-label="$t('messages.merchant_select')"
           />
         </div>
       </div>
-      <div class="col-md-auto"></div>
     </div>
     
     <q-data-table
@@ -112,9 +112,9 @@
       <q-modal-layout>
         <q-toolbar slot="header">
           <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowAccountDetails.close()"><q-icon name="clear" /></q-btn>
-          <div class="q-toolbar-title">
+          <q-toolbar-title>
             {{ $t("messages.account_info") }}
-          </div>
+          </q-toolbar-title>
         </q-toolbar>
         <div class="layout-padding">
           <q-input v-model="ViewAccount.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
@@ -159,6 +159,7 @@
     QModal,
     QModalLayout,
     QToolbar,
+    QToolbarTitle,
     Loading,
     Alert
   } from 'quasar'
@@ -194,7 +195,7 @@
           }
         },
         sort: {
-          column: 'AccountID',
+          column: 'Name',
           dir: 'asc'
         },
         ViewAccount: {},
@@ -206,8 +207,7 @@
           { 'label': this.$t('messages.closed_account'), 'value': 2 }
         ],
         MerchantID: 1,
-        selectMerchantOptions: [],
-        mPages: 1
+        selectMerchantOptions: []
       }
     },
     watch: {
@@ -226,7 +226,7 @@
         if (mID === 1) {
           mID = ''
         }
-        var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
+        var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID, Name: ''}
         if (this.searchName !== '') {
           ret.Name = this.searchName
         }
@@ -240,12 +240,17 @@
       },
       searchName () {
         return this.searchName1 ? `${this.searchName1}` : ''
+      },
+      mPages () {
+        var ret = (this.$config.get('runtime.mtotalpages'))
+        return ret
       }
     },
     methods: {
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
+          console.log(this.url)
           this.table = response.data.Accounts
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
@@ -273,8 +278,10 @@
           // error callback
           Loading.hide()
         })
+        Loading.hide()
       },
       getMerchantData () {
+        var mP = this.mPages
         var i = 1
         do {
           var ret = {ListPage: i, ListOrder: 'Name.asc'}
@@ -285,7 +292,7 @@
             }
           })
           i++
-        } while (i < 10)
+        } while (i <= mP)
       },
       viewAccount (ID) {
         var index = this.table.findIndex(obj => obj.AccountID === ID)
@@ -388,6 +395,7 @@
       QModal,
       QModalLayout,
       QToolbar,
+      QToolbarTitle,
       Loading,
       Alert
     }

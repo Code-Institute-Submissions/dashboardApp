@@ -18,6 +18,9 @@
         
         <q-btn flat @click="$router.replace('/logout')" >
           <q-icon name="exit to app" />
+          <q-tooltip anchor="bottom left" self="bottom left" :offset="[-40, 0]">
+            {{ $t("messages.logout") }}
+          </q-tooltip>
         </q-btn>
       </q-toolbar>
 
@@ -29,23 +32,23 @@
         -->
         <q-list highlight>
           <q-side-link item to="/admin/Merchants" exact v-if="this.$store.getters.getShowMerchants">
-            <q-item-side icon="local post office" />
+            <q-item-side icon="view list" />
             <q-item-main v-bind:label="$t('messages.Menu_merchant')" sublabel="" />
           </q-side-link>
           <q-side-link item to="/admin/Accounts" exact v-if="this.$store.getters.getShowAccounts">
-            <q-item-side icon="local post office" />
+            <q-item-side icon="view list" />
             <q-item-main v-bind:label="$t('messages.Menu_account')" sublabel="" />
           </q-side-link>
           <q-side-link item to="/admin/Transactions" exact v-if="this.$store.getters.getShowTransactions">
-            <q-item-side icon="local post office" />
+            <q-item-side icon="view list" />
             <q-item-main v-bind:label="$t('messages.Menu_transaction')" sublabel="" />
           </q-side-link>
           <q-side-link item to="/admin/Chargebacks" exact v-if="this.$store.getters.getShowChargebacks">
-            <q-item-side icon="local post office" />
+            <q-item-side icon="view list" />
             <q-item-main v-bind:label="$t('messages.Menu_chargebacks')" sublabel="" />
           </q-side-link>
           <q-side-link item to="/admin/Settlements" exact v-if="this.$store.getters.getShowSettlements">
-            <q-item-side icon="local post office" />
+            <q-item-side icon="view list" />
             <q-item-main v-bind:label="$t('messages.Menu_settlements')" sublabel="" />
           </q-side-link>
         </q-list>
@@ -91,6 +94,7 @@ import {
   QCollapsible,
   QSearch
 } from 'quasar'
+import axios from 'axios'
 export default {
   name: 'index',
   components: {
@@ -138,10 +142,20 @@ export default {
     document.cookie = 'default_auth_token='
     document.cookie = 'impersonate_auth_token='
     this.menu = this.$store.getters.getMenu
+    axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', {}).then(response => {
+      if (response.data !== null) {
+        this.$auth.token('mtotalpages-data', JSON.stringify(response.data.Pages.TotalPages))
+        this.$store.dispatch('updateMtotalpages', response.data.Pages.TotalPages)
+        var conf = this.$config.all()
+        conf.runtime.mtotalpages = response.data.Pages.TotalPages
+        this.$config.replace(conf)
+      }
+    }, response => {
+      // error callback
+    })
   },
   methods: {
     getDataM () {
-      console.log(this.$config.get('runtime.menu'))
       this.menu = this.$config.get('runtime.menu')
     }
   }
