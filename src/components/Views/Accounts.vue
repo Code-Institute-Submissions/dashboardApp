@@ -196,7 +196,7 @@
         },
         sort: {
           column: 'Name',
-          dir: 'asc'
+          dir: ''
         },
         ViewAccount: {},
         showResetButton: false,
@@ -240,10 +240,15 @@
       },
       searchName () {
         return this.searchName1 ? `${this.searchName1}` : ''
-      },
+      /* },
       mPages () {
         var ret = (this.$config.get('runtime.mtotalpages'))
-        return ret
+        return ret */
+      },
+      getAllMerchants () {
+        var allMerchants = this.$config.get('runtime.allmerchants')
+        console.log(this.$config.get('runtime.allmerchants'))
+        return allMerchants
       }
     },
     methods: {
@@ -281,7 +286,11 @@
         Loading.hide()
       },
       getMerchantData () {
-        var mP = this.mPages
+        var merchantData = this.getAllMerchants
+        this.selectMerchantOptions = _.toArray(merchantData)
+        // this.selectMerchantOptions = _.sortBy(allMerchants, o => o.label)
+        /* this.selectMerchantOptions = (this.$config.get('runtime.allmerchants')) */
+        /* var mP = this.mPages
         var i = 1
         do {
           var ret = {ListPage: i, ListOrder: 'Name.asc'}
@@ -292,7 +301,7 @@
             }
           })
           i++
-        } while (i <= mP)
+        } while (i <= mP) */
       },
       viewAccount (ID) {
         var index = this.table.findIndex(obj => obj.AccountID === ID)

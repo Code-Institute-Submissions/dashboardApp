@@ -257,10 +257,15 @@
         }
         var ret = {MerchantID: mID, AccountID: aID, SettlementID: sID}
         return ret
-      },
+      /* },
       mPages () {
         var ret = (this.$config.get('runtime.mtotalpages'))
-        return ret
+        return ret */
+      },
+      getAllMerchants () {
+        var allMerchants = this.$config.get('runtime.allmerchants')
+        console.log(this.$config.get('runtime.allmerchants'))
+        return allMerchants
       }
     },
     methods: {
@@ -297,7 +302,10 @@
         Loading.hide()
       },
       getMerchantData () {
-        var mP = this.mPages
+        var merchantData = this.getAllMerchants
+        this.selectMerchantOptions = _.toArray(merchantData)
+        /* this.selectMerchantOptions = (this.$config.get('runtime.allmerchants')) */
+        /* var mP = this.mPages
         var i = 1
         do {
           var ret = {ListPage: i, ListOrder: 'Name.asc'}
@@ -308,7 +316,7 @@
             }
           })
           i++
-        } while (i <= mP)
+        } while (i <= mP) */
       },
       checkAccountDisabled () {
         if (typeof this.MerchantID !== 'string') {

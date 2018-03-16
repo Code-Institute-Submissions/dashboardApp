@@ -92,7 +92,8 @@ import {
   QSlider,
   QTooltip,
   QCollapsible,
-  QSearch
+  QSearch,
+  Loading
 } from 'quasar'
 import axios from 'axios'
 export default {
@@ -124,15 +125,23 @@ export default {
     QSlider,
     QTooltip,
     QCollapsible,
-    QSearch
+    QSearch,
+    Loading
   },
   data () {
     return {
-      menu: []
+      menu: [],
+      selectMerchantOptions: []
     }
   },
   mounted () {
     this.getDataM()
+  },
+  computed: {
+    mPages () {
+      var ret = this.$store.getters.getMtotalpages
+      return ret
+    }
   },
   created () {
     this.$auth.token('refresh-url', this.$config.get('auth.refreshUrl'))
@@ -142,21 +151,33 @@ export default {
     document.cookie = 'default_auth_token='
     document.cookie = 'impersonate_auth_token='
     this.menu = this.$store.getters.getMenu
-    axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', {}).then(response => {
-      if (response.data !== null) {
-        this.$auth.token('mtotalpages-data', JSON.stringify(response.data.Pages.TotalPages))
-        this.$store.dispatch('updateMtotalpages', response.data.Pages.TotalPages)
-        var conf = this.$config.all()
-        conf.runtime.mtotalpages = response.data.Pages.TotalPages
-        this.$config.replace(conf)
-      }
-    }, response => {
-      // error callback
-    })
+
+    var mP = this.mPages
+    var i
+    for (i = 1; i <= mP; i++) {
+      Loading.show()
+      var ret = {ListPage: i, ListOrder: 'Name.asc'}
+      axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
+        var data = response.data.Merchants
+        for (var entry in data) {
+          this.selectMerchantOptions.push({label: data[entry].Name, value: data[entry].MerchantID})
+        }
+      })
+      Loading.hide()
+    }
   },
   methods: {
     getDataM () {
       this.menu = this.$config.get('runtime.menu')
+
+      if (this.selectMerchantOptions !== null) {
+        this.$auth.token('allmerchants-data', JSON.stringify(this.selectMerchantOptions))
+        this.$store.dispatch('updateAllmerchants', this.selectMerchantOptions)
+        var conf = this.$config.all()
+        conf.runtime.allmerchants = this.selectMerchantOptions
+        this.$config.replace(conf)
+        console.log(this.selectMerchantOptions)
+      }
     }
   }
 }
