@@ -310,15 +310,6 @@
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
         }
         return ret
-      /* },
-      mPages () {
-        var ret = (this.$config.get('runtime.mtotalpages'))
-        return ret */
-      },
-      getAllMerchants () {
-        var allMerchants = this.$config.get('runtime.allmerchants')
-        console.log(this.$config.get('runtime.allmerchants'))
-        return allMerchants
       }
     },
     methods: {
@@ -350,21 +341,19 @@
         Loading.hide()
       },
       getMerchantData () {
-        var merchantData = this.getAllMerchants
-        this.selectMerchantOptions = _.toArray(merchantData)
-        /* this.selectMerchantOptions = (this.$config.get('runtime.allmerchants')) */
-        /* var mP = this.mPages
-        var i = 1
-        do {
-          var ret = {ListPage: i, ListOrder: 'Name.asc'}
-          axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
-            var data = response.data.Merchants
-            for (var entry in data) {
-              this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
-            }
-          })
-          i++
-        } while (i <= mP) */
+        // Get list of all merchants for dropdown menu
+        Loading.show()
+        var ret = {Type: 1}
+        axios.post(this.$config.get('auth.api2URL') + '/ListMerchantsDashboard', ret).then(response => {
+          var merchantsList = response.data.Merchants
+          for (var entry in merchantsList) {
+            this.selectMerchantOptions.push({label: merchantsList[entry].Name, value: merchantsList[entry].MerchantID})
+          }
+          Loading.hide()
+        }, response => {
+          // error callback
+          Loading.hide()
+        })
       },
       checkAccountDisabled () {
         if (typeof this.MerchantID !== 'string') {
@@ -382,7 +371,7 @@
           var data = response.data.Accounts
           this.selectAccountOptions = []
           for (var entry in data) {
-            this.selectAccountOptions.push({'label': data[entry].Name, value: data[entry].AccountID})
+            this.selectAccountOptions.push({label: data[entry].Name, value: data[entry].AccountID})
           }
         })
       },

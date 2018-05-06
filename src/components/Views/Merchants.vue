@@ -153,8 +153,8 @@
           { label: this.$t('messages.Name'), field: 'Name', sort: true, type: 'string' },
           { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid' },
           { label: this.$t('messages.CompanyName'), field: 'CompanyName', sort: true, type: 'string' },
-          { label: this.$t('messages.CompanyContactInfo'), field: 'CompanyContactInfo', sort: true, type: 'string' },
-          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean' }
+          { label: this.$t('messages.CompanyContactInfo'), field: 'CompanyContactInfo', type: 'string' },
+          { label: this.$t('messages.MerchantClosed'), field: 'Closed', width: '80px', type: 'boolean' }
         ],
         configs: {
           columnPicker: false,

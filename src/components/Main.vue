@@ -95,7 +95,6 @@ import {
   QSearch,
   Loading
 } from 'quasar'
-import axios from 'axios'
 export default {
   name: 'index',
   components: {
@@ -130,19 +129,13 @@ export default {
   },
   data () {
     return {
-      menu: [],
-      selectMerchantOptions: []
+      menu: []
     }
   },
   mounted () {
     this.getDataM()
   },
-  computed: {
-    mPages () {
-      var ret = this.$store.getters.getMtotalpages
-      return ret
-    }
-  },
+
   created () {
     this.$auth.token('refresh-url', this.$config.get('auth.refreshUrl'))
     this.$auth.token('basic-auth-token', this.$config.get('auth.apiKey'))
@@ -151,33 +144,10 @@ export default {
     document.cookie = 'default_auth_token='
     document.cookie = 'impersonate_auth_token='
     this.menu = this.$store.getters.getMenu
-
-    var mP = this.mPages
-    var i
-    for (i = 1; i <= mP; i++) {
-      Loading.show()
-      var ret = {ListPage: i, ListOrder: 'Name.asc'}
-      axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
-        var data = response.data.Merchants
-        for (var entry in data) {
-          this.selectMerchantOptions.push({label: data[entry].Name, value: data[entry].MerchantID})
-        }
-      })
-      Loading.hide()
-    }
   },
   methods: {
     getDataM () {
       this.menu = this.$config.get('runtime.menu')
-
-      if (this.selectMerchantOptions !== null) {
-        this.$auth.token('allmerchants-data', JSON.stringify(this.selectMerchantOptions))
-        this.$store.dispatch('updateAllmerchants', this.selectMerchantOptions)
-        var conf = this.$config.all()
-        conf.runtime.allmerchants = this.selectMerchantOptions
-        this.$config.replace(conf)
-        console.log(this.selectMerchantOptions)
-      }
     }
   }
 }

@@ -182,9 +182,9 @@
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '200px' },
           { label: this.$t('messages.AccountName'), field: 'Name', sort: true, type: 'string' },
           { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: true, type: 'guid' },
+          { label: this.$t('messages.MerchantID'), field: 'MerchantID', type: 'guid' },
           { label: this.$t('messages.AccountType_short'), field: 'Type', width: '80px', sort: true, type: 'string' },
-          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', sort: true, type: 'boolean' }
+          { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', type: 'boolean' }
         ],
         configs: {
           columnPicker: false,
@@ -240,22 +240,12 @@
       },
       searchName () {
         return this.searchName1 ? `${this.searchName1}` : ''
-      /* },
-      mPages () {
-        var ret = (this.$config.get('runtime.mtotalpages'))
-        return ret */
-      },
-      getAllMerchants () {
-        var allMerchants = this.$config.get('runtime.allmerchants')
-        console.log(this.$config.get('runtime.allmerchants'))
-        return allMerchants
       }
     },
     methods: {
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', this.url).then(response => {
-          console.log(this.url)
           this.table = response.data.Accounts
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
@@ -286,22 +276,19 @@
         Loading.hide()
       },
       getMerchantData () {
-        var merchantData = this.getAllMerchants
-        this.selectMerchantOptions = _.toArray(merchantData)
-        // this.selectMerchantOptions = _.sortBy(allMerchants, o => o.label)
-        /* this.selectMerchantOptions = (this.$config.get('runtime.allmerchants')) */
-        /* var mP = this.mPages
-        var i = 1
-        do {
-          var ret = {ListPage: i, ListOrder: 'Name.asc'}
-          axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', ret).then(response => {
-            var data = response.data.Merchants
-            for (var entry in data) {
-              this.selectMerchantOptions.push({'label': data[entry].Name, value: data[entry].MerchantID})
-            }
-          })
-          i++
-        } while (i <= mP) */
+        // Get list of all merchants for dropdown menu
+        Loading.show()
+        var ret = {Type: 1}
+        axios.post(this.$config.get('auth.api2URL') + '/ListMerchantsDashboard', ret).then(response => {
+          var merchantsList = response.data.Merchants
+          for (var entry in merchantsList) {
+            this.selectMerchantOptions.push({label: merchantsList[entry].Name, value: merchantsList[entry].MerchantID})
+          }
+          Loading.hide()
+        }, response => {
+          // error callback
+          Loading.hide()
+        })
       },
       viewAccount (ID) {
         var index = this.table.findIndex(obj => obj.AccountID === ID)

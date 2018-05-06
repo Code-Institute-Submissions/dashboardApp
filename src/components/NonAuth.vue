@@ -104,17 +104,6 @@
         }, response => {
           // error callback
         })
-        axios.post(this.$config.get('auth.api2URL') + '/ListMerchants', {}).then(response => {
-          if (response.data !== null) {
-            this.$auth.token('mtotalpages-data', JSON.stringify(response.data.Pages.TotalPages))
-            this.$store.dispatch('updateMtotalpages', response.data.Pages.TotalPages)
-            var conf = this.$config.all()
-            conf.runtime.mtotalpages = response.data.Pages.TotalPages
-            this.$config.replace(conf)
-          }
-        }, response => {
-          // error callback
-        })
         this.$router.push({path: '/admin/Home'})
       }
     }
