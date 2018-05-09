@@ -19,7 +19,7 @@ module.exports = {
       download_csv: 'Download Csv',
       error_data: 'Can\'t show data',
       logout: 'Log out',
-      reset_url: 'Reset selection',
+      reset_filters: 'Reset all filters',
       alert_no_chargebacks: 'No chargeback',
       alert_no_accounts: 'No accounts',
       merchant_select: 'Select merchant',

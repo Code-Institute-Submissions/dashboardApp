@@ -95,9 +95,9 @@
         :max=maxPages
       >
       </q-pagination>
-      <q-btn small round flat v-on:click="resetUrl()" v-show="showResetButton"><q-icon name="update" />
+      <q-btn small round flat v-on:click="resetFilters()" v-show="showResetButton"><q-icon name="update" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.reset_url") }}
+            {{ $t("messages.reset_filters") }}
           </q-tooltip>
       </q-btn>
       
@@ -210,7 +210,7 @@
           dir: ''
         },
         ViewAccount: {},
-        showResetButton: false,
+        showResetButton: true,
         selectType: 0,
         selectTypeOptions: [
           { 'label': this.$t('messages.all'), 'value': 0 },
@@ -272,14 +272,9 @@
           }
           else {
             this.maxPages = 1
-            this.showResetButton = true
           }
           if (this.page > this.maxPages) {
             this.page = this.maxPages
-          }
-          // Show reset button
-          if (response.data.Pages.TotalPages < 2) {
-            this.showResetButton = true
           }
           Loading.hide()
         }, response => {
@@ -347,11 +342,12 @@
           Loading.hide()
         })
       },
-      resetUrl () {
-        this.$router.push({path: '/admin/Accounts'})
+      resetFilters () {
         this.MerchantID = 1
+        this.searchName1 = ''
+        this.selectType = 0
+        this.selectAccountType = 0
         this.getData()
-        this.showResetButton = false
       },
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {

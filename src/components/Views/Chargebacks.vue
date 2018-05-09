@@ -96,7 +96,7 @@
       </template>
       
       <template slot="col-ChargebackDateTime" slot-scope="cell">
-        {{ cell.row.ChargebackDateTime | moment('utc',"DD-MM-YYYY HH:mm:ss") }}
+        {{ cell.row.ChargebackDateTime | moment("YYYY-MM-DD HH:mm:ss") }}
       </template>
 
     </q-data-table>
@@ -105,6 +105,12 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
+      
+      <q-btn small round flat v-on:click="resetFilters()" v-show="showResetButton"><q-icon name="update" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.reset_filters") }}
+          </q-tooltip>
+      </q-btn>
    
       <div class="float-right" >
         {{ $t("messages.download_as_csv") }}
@@ -211,6 +217,7 @@
           column: 'Name',
           dir: 'asc'
         },
+        showResetButton: true,
         MerchantID: 1,
         selectMerchantOptions: [],
         AccountID: 1,
@@ -384,6 +391,16 @@
           // error callback
           Loading.hide()
         })
+      },
+      resetFilters () {
+        this.MerchantID = 1
+        this.AccountID = 1
+        this.selectAccountOptions = []
+        this.selectAccountDisabled = true
+        this.PaymentGatewayReference = 1
+        this.selectChargebackStatus = ''
+        this.selectTransactionType = ''
+        this.getDateRange()
       },
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {

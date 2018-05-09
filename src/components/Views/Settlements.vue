@@ -83,6 +83,13 @@
           </q-tooltip>
         </q-btn>
       </template>
+      
+      <template slot="col-SettlementDateFrom" slot-scope="cell">
+        {{ cell.row.SettlementDateFrom | moment("YYYY-MM-DD") }}
+      </template>
+      <template slot="col-SettlementDateTo" slot-scope="cell">
+        {{ cell.row.SettlementDateTo | moment("YYYY-MM-DD") }}
+      </template>
 
       
     </q-data-table>
@@ -91,6 +98,11 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
+      <q-btn small round flat v-on:click="resetFilters()" v-show="showResetButton"><q-icon name="update" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.reset_filters") }}
+          </q-tooltip>
+      </q-btn>
       <div class="float-right" >
         {{ $t("messages.download_as_csv") }}
         <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
@@ -191,6 +203,7 @@
           column: 'Name',
           dir: 'asc'
         },
+        showResetButton: true,
         MerchantID: 1,
         selectMerchantOptions: [],
         AccountID: 1,
@@ -347,6 +360,14 @@
           Loading.hide()
         })
         Loading.hide()
+      },
+      resetFilters () {
+        this.MerchantID = 1
+        this.AccountID = 1
+        this.selectAccountOptions = []
+        this.selectAccountDisabled = true
+        this.selectSettlementType = ''
+        this.getDateRange()
       },
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {

@@ -114,20 +114,10 @@
             {{ $t("messages.settlement_details") }}
           </q-tooltip>
         </q-btn>
-        <!-- <q-btn small round flat v-on:click="viewSettlementPayoutID(cell.row.MerchantID, cell.row.AccountID, cell.row.PayoutSettlementID)"  color="primary"><q-icon name="forward" />
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.view_transaction_payout_settlement") }}
-          </q-tooltip>
-        </q-btn>
-        <q-btn small round flat v-on:click="viewSettlementReservationPayoutID(cell.row.MerchantID, cell.row.AccountID, cell.row.ReservationPayoutSettlementID)"  color="primary"><q-icon name="forward" />
-          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.view_transaction_reservation_payout_settlement") }}
-          </q-tooltip>
-        </q-btn> -->
       </template>
 
       <template slot="col-TransactionDateTime" slot-scope="cell">
-        {{ cell.row.TransactionDateTime | moment('utc',"YYYY-MM-DD HH:mm:ss") }}
+        {{ cell.row.TransactionDateTime | moment("YYYY-MM-DD HH:mm:ss") }}
       </template>
       
       <template slot="col-TransactionSuccessful" slot-scope="cell">
@@ -149,9 +139,9 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
-      <q-btn small round flat v-on:click="resetUrl()" v-show="showResetButton"><q-icon name="update" />
+      <q-btn small round flat v-on:click="resetFilters()" v-show="showResetButton"><q-icon name="update" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
-            {{ $t("messages.reset_url") }}
+            {{ $t("messages.reset_filters") }}
           </q-tooltip>
       </q-btn>
       <div class="float-right" >
@@ -308,7 +298,7 @@
         searchDateFrom: '',
         searchDateTo: '',
         columns: [
-          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '200px' },
+          { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '150px' },
           { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date' },
           { label: this.$t('messages.TransactionType_short'), field: 'TransactionType', sort: true, type: 'string' },
           { label: this.$t('messages.TransactionChannel_short'), field: 'TransactionChannel', sort: true, type: 'string' },
@@ -573,12 +563,14 @@
           Loading.hide()
         })
       },
-      resetUrl () {
-        this.$router.push({path: '/admin/Transactions'})
+      resetFilters () {
         this.MerchantID = 1
         this.AccountID = 1
         this.selectAccountOptions = []
         this.selectAccountDisabled = true
+        this.selectTransactionType = ''
+        this.selectTransactionChannel = ''
+        this.selectChargebackStatus = ''
         this.getDateRange()
       },
       onSort (sortColumn, sortDirection) {

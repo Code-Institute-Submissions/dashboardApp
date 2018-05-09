@@ -67,6 +67,13 @@
         v-model="page"
         :max=maxPages
       ></q-pagination>
+      
+      <q-btn small round flat v-on:click="resetFilters()" v-show="showResetButton"><q-icon name="update" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.reset_filters") }}
+          </q-tooltip>
+      </q-btn>
+      
       <div class="float-right" >
         {{ $t("messages.download_as_csv") }}
         <q-btn round flat v-on:click="getCsv()"><q-icon name="get app" color="green" />
@@ -176,6 +183,7 @@
           column: 'Name',
           dir: 'asc'
         },
+        showResetButton: true,
         MerchantID: 1
       }
     },
@@ -271,6 +279,13 @@
           this.sort.dir = 'desc'
         }
         this.sort.column = sortColumn
+        this.getData()
+      },
+      resetFilters () {
+        this.MerchantID = 1
+        this.searchName1 = ''
+        this.searchCompanyName1 = ''
+        this.selectType = 0
         this.getData()
       },
       setupWatchers () {
