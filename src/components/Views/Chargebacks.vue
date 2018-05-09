@@ -57,6 +57,28 @@
           />
         </div>
       </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectChargebackStatus"
+            :options="selectChargebackStatusOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.selectChargebackStatus')"
+          />
+        </div>
+      </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectTransactionType"
+            :options="selectTransactionTypeOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.selectTransactionType')"
+          />
+        </div>
+      </div>
     </div>
     
     <q-data-table
@@ -111,6 +133,8 @@
           <q-input v-model="ViewChargeback.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
           <q-input v-model="ViewChargeback.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
           <q-input v-model="ViewChargeback.WhitelabelMerchantID"  v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
+          <q-input v-model="ViewChargeback.MerchantReference"  v-bind:stack-label="$t('messages.MerchantReference')" readonly />
+          <q-input v-model="ViewChargeback.PaymentGatewayReference"  v-bind:stack-label="$t('messages.PaymentGatewayReference')" readonly />
           <q-input v-model="ViewChargeback.TransactionType" v-bind:stack-label="$t('messages.TransactionType')" readonly />
           <q-input v-model="ViewChargeback.TransactionValue"  v-bind:stack-label="$t('messages.TransactionValue_chargebacks')" readonly />
           <q-input v-model="ViewChargeback.TransactionCurrency"  v-bind:stack-label="$t('messages.TransactionCurrency')" readonly />
@@ -155,6 +179,8 @@
       this.setupWatchers()
       this.getDateRange()
       this.getMerchantData()
+      this.getChargebackStatuses()
+      this.getTransactionTypes()
     },
     data () {
       return {
@@ -168,9 +194,8 @@
           { label: this.$t('messages.ChargebackDateTime_short'), field: 'ChargebackDateTime', sort: true, type: 'date' },
           { label: this.$t('messages.ChargebackType_short'), field: 'ChargebackType', sort: true, type: 'string' },
           { label: this.$t('messages.ChargebackAmount_short'), field: 'ChargebackAmount', sort: true, type: 'number' },
-          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' }, */
-          { label: this.$t('messages.ChargebackStatus_short'), field: 'ChargebackStatus', sort: true, type: 'number' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' }
+          { label: this.$t('messages.ChargebackStatus_short'), field: 'ChargebackDescription', sort: true, type: 'string' },
+          { label: this.$t('messages.TransactionType'), field: 'TransactionType', sort: true, type: 'string' }
         ],
         configs: {
           columnPicker: false,
@@ -191,7 +216,11 @@
         AccountID: 1,
         selectAccountOptions: [],
         selectAccountDisabled: false,
-        PaymentGatewayReference: 1
+        PaymentGatewayReference: 1,
+        selectChargebackStatus: '',
+        selectChargebackStatusOptions: [],
+        selectTransactionType: '',
+        selectTransactionTypeOptions: []
       }
     },
 
@@ -234,6 +263,12 @@
           pgRef = ''
         }
         var ret = {MerchantID: mID, AccountID: aID, PaymentGatewayReference: pgRef, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, ListPage: this.page, ListOrder: ''}
+        if (this.selectChargebackStatus !== '') {
+          ret.ChargebackStatus = this.selectChargebackStatus
+        }
+        if (this.selectTransactionType !== '') {
+          ret.TransactionType = this.selectTransactionType
+        }
         return ret
       }
     },
@@ -277,6 +312,28 @@
         }, response => {
           // error callback
           Loading.hide()
+        })
+      },
+      getChargebackStatuses () {
+        // Get chargeback statuses for dropdown menu
+        axios.post(this.$config.get('auth.api2URL') + '/ListChargebackStatuses').then(response => {
+          var statusList = response.data.ChargebackStatuses
+          for (var entry in statusList) {
+            this.selectChargebackStatusOptions.push({label: statusList[entry].Description, value: statusList[entry].ID})
+          }
+        }, response => {
+          // error callback
+        })
+      },
+      getTransactionTypes () {
+        // Get transaction types for dropdown menu
+        axios.post(this.$config.get('auth.api2URL') + '/ListTransactionTypes').then(response => {
+          var typesList = response.data.TransactionTypes
+          for (var entry in typesList) {
+            this.selectTransactionTypeOptions.push({label: typesList[entry].Description, value: typesList[entry].ID})
+          }
+        }, response => {
+          // error callback
         })
       },
       checkAccountDisabled () {

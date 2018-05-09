@@ -5,7 +5,7 @@
     <div class="row">
       <div class="col-md-3">
         <div class="auto">
-          <q-search v-bind:placeholder="$t('messages.Name')" :debounce="500"
+          <q-search v-bind:placeholder="$t('messages.MerchantName')" :debounce="500"
                     v-model.lazy="searchName1" @input="getData" />
         </div>
       </div>
@@ -89,7 +89,7 @@
         <div class="layout-padding">
           <q-input v-model="ViewMerchant.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
           <q-input v-model="ViewMerchant.WhitelabelMerchantID" v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
-          <q-input v-model="ViewMerchant.Name" v-bind:stack-label="$t('messages.Name')" readonly />
+          <q-input v-model="ViewMerchant.Name" v-bind:stack-label="$t('messages.MerchantName')" readonly />
           <q-input v-model="ViewMerchant.CompanyName" v-bind:stack-label="$t('messages.CompanyName')" readonly />
           <q-input v-model="ViewMerchant.CompanyAddress" v-bind:stack-label="$t('messages.CompanyAddress')" type="textarea" :min-rows="1" readonly />
           <q-input v-model="ViewMerchant.CompanyContactInfo" v-bind:stack-label="$t('messages.CompanyContactInfo')" readonly />
@@ -150,7 +150,7 @@
         searchCompanyName1: '',
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
-          { label: this.$t('messages.Name'), field: 'Name', sort: true, type: 'string' },
+          { label: this.$t('messages.MerchantName'), field: 'Name', sort: true, type: 'string' },
           { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'guid' },
           { label: this.$t('messages.CompanyName'), field: 'CompanyName', sort: true, type: 'string' },
           { label: this.$t('messages.CompanyContactInfo'), field: 'CompanyContactInfo', type: 'string' },
@@ -223,13 +223,6 @@
           if (this.page > this.maxPages) {
             this.page = this.maxPages
           }
-          /* if (this.searchCompanyName1 !== '') {
-            var myArr = this.table
-            var inputTerm = this.searchCompanyName1
-            var results = _.filter(myArr, o => _.includes(o.CompanyName, inputTerm))
-            console.log(results)
-            this.table = results
-          } */
           Loading.hide()
         }, response => {
           // error callback

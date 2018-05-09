@@ -57,6 +57,39 @@
           />
         </div>
       </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectTransactionType"
+            :options="selectTransactionTypeOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.selectTransactionType')"
+          />
+        </div>
+      </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectTransactionChannel"
+            :options="selectTransactionChannelOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.selectTransactionChannel')"
+          />
+        </div>
+      </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectChargebackStatus"
+            :options="selectChargebackStatusOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.selectChargebackStatus')"
+          />
+        </div>
+      </div>
     </div>
     
     <q-data-table
@@ -76,7 +109,12 @@
             {{ $t("messages.view_transaction_chargeback") }}
           </q-tooltip>
         </q-btn>
-        <q-btn small round flat v-on:click="viewSettlementPayoutID(cell.row.MerchantID, cell.row.AccountID, cell.row.PayoutSettlementID)"  color="primary"><q-icon name="forward" />
+        <q-btn small round flat v-on:click="viewSettlementDetails(cell.row.MerchantID, cell.row.AccountID, cell.row.PayoutSettlementID, cell.row.ReservationPayoutSettlementID)"><q-icon name="zoom in" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
+            {{ $t("messages.settlement_details") }}
+          </q-tooltip>
+        </q-btn>
+        <!-- <q-btn small round flat v-on:click="viewSettlementPayoutID(cell.row.MerchantID, cell.row.AccountID, cell.row.PayoutSettlementID)"  color="primary"><q-icon name="forward" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.view_transaction_payout_settlement") }}
           </q-tooltip>
@@ -85,7 +123,7 @@
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.view_transaction_reservation_payout_settlement") }}
           </q-tooltip>
-        </q-btn>
+        </q-btn> -->
       </template>
 
       <template slot="col-TransactionDateTime" slot-scope="cell">
@@ -200,6 +238,29 @@
       </q-modal-layout>
     </q-modal>
     
+    
+    <!-- Modal for settlement info -->
+    <q-modal ref="layoutModalShowSettlementDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
+      <q-modal-layout>
+        <q-toolbar slot="header">
+          <q-btn color="white" class="on-right"  no-caps flat @click="$refs.layoutModalShowSettlementDetails.close()"><q-icon name="clear" /></q-btn>
+          <q-toolbar-title>
+            {{ $t("messages.settlement_info") }}
+          </q-toolbar-title>
+        </q-toolbar>
+        <div class="layout-padding">
+          <q-input v-model="ViewSettlement.SettlementNumber" v-bind:stack-label="$t('messages.SettlementNumber')" readonly />
+          <q-input v-model="ViewSettlement.SettlementType" v-bind:stack-label="$t('messages.SettlementType')" readonly />
+          <q-input v-model="ViewSettlement.SettlementDateFrom" v-bind:stack-label="$t('messages.SettlementDateFrom')" readonly />
+          <q-input v-model="ViewSettlement.SettlementDateTo" v-bind:stack-label="$t('messages.SettlementDateTo')" readonly />
+          <q-input v-model="ViewSettlement.TransactionsPaidSum" v-bind:stack-label="$t('messages.TransactionsPaidSum')" readonly />
+          <q-input v-model="ViewSettlement.ReservationsPaidOutSum" v-bind:stack-label="$t('messages.ReservationsPaidOutSum')" readonly />
+          <q-input v-model="ViewSettlement.CostsSum" v-bind:stack-label="$t('messages.CostsSum')" readonly />
+          <q-input v-model="ViewSettlement.Total" v-bind:stack-label="$t('messages.Total')" readonly />
+        </div>
+      </q-modal-layout>
+    </q-modal>
+    
   </div>
 </template>
 
@@ -235,6 +296,9 @@
       this.setupWatchers()
       this.getDateRange()
       this.getMerchantData()
+      this.getTransactionTypes()
+      this.getTransactionChannels()
+      this.getChargebackStatuses()
     },
     data () {
       return {
@@ -246,12 +310,11 @@
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '200px' },
           { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date' },
-          { label: this.$t('messages.TransactionValue_transactions'), field: 'TransactionValue', sort: true, type: 'number' },
-          /* { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', sort: false, type: 'string' }, */
-          { label: this.$t('messages.TransactionSuccessful_short'), field: 'TransactionSuccessful', sort: true, type: 'boolean' },
           { label: this.$t('messages.TransactionType_short'), field: 'TransactionType', sort: true, type: 'string' },
-          { label: this.$t('messages.ChargebackStatus'), field: 'ChargebackStatus', sort: true, type: 'number' }
+          { label: this.$t('messages.TransactionChannel_short'), field: 'TransactionChannel', sort: true, type: 'string' },
+          { label: this.$t('messages.TransactionValue_transactions'), field: 'TransactionValue', sort: true, type: 'number' },
+          { label: this.$t('messages.TransactionSuccessful_short'), field: 'TransactionSuccessful', sort: true, type: 'boolean' },
+          { label: this.$t('messages.ChargebackStatus'), field: 'ChargebackDescription', sort: true, type: 'string' }
         ],
         configs: {
           columnPicker: false,
@@ -272,7 +335,14 @@
         selectMerchantOptions: [],
         AccountID: 1,
         selectAccountOptions: [],
-        selectAccountDisabled: false
+        selectAccountDisabled: false,
+        selectTransactionType: '',
+        selectTransactionTypeOptions: [],
+        selectTransactionChannel: '',
+        selectTransactionChannelOptions: [],
+        selectChargebackStatus: '',
+        selectChargebackStatusOptions: [],
+        ViewSettlement: {}
       }
     },
 
@@ -308,6 +378,15 @@
         var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, MerchantID: mID, AccountID: aID, ListPage: this.page, ListOrder: ''}
         if (this.sort.column !== '') {
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
+        }
+        if (this.selectTransactionType !== '') {
+          ret.TransactionType = this.selectTransactionType
+        }
+        if (this.selectTransactionChannel !== '') {
+          ret.TransactionChannel = this.selectTransactionChannel
+        }
+        if (this.selectChargebackStatus !== '') {
+          ret.ChargebackStatus = this.selectChargebackStatus
         }
         return ret
       }
@@ -353,6 +432,39 @@
         }, response => {
           // error callback
           Loading.hide()
+        })
+      },
+      getTransactionTypes () {
+        // Get transaction types for dropdown menu
+        axios.post(this.$config.get('auth.api2URL') + '/ListTransactionTypes').then(response => {
+          var typesList = response.data.TransactionTypes
+          for (var entry in typesList) {
+            this.selectTransactionTypeOptions.push({label: typesList[entry].Description, value: typesList[entry].ID})
+          }
+        }, response => {
+          // error callback
+        })
+      },
+      getTransactionChannels () {
+        // Get transaction channels for dropdown menu
+        axios.post(this.$config.get('auth.api2URL') + '/ListTransactionChannels').then(response => {
+          var channelsList = response.data.TransactionChannels
+          for (var entry in channelsList) {
+            this.selectTransactionChannelOptions.push({label: channelsList[entry].Description, value: channelsList[entry].ID})
+          }
+        }, response => {
+          // error callback
+        })
+      },
+      getChargebackStatuses () {
+        // Get chargeback statuses for dropdown menu
+        axios.post(this.$config.get('auth.api2URL') + '/ListChargebackStatuses').then(response => {
+          var statusList = response.data.ChargebackStatuses
+          for (var entry in statusList) {
+            this.selectChargebackStatusOptions.push({label: statusList[entry].Description, value: statusList[entry].ID})
+          }
+        }, response => {
+          // error callback
         })
       },
       checkAccountDisabled () {
@@ -414,21 +526,35 @@
         this.$refs.layoutModalShowTransactionDetails.open()
       },
       viewTransactionChargeback (MerchantID, AccountID, PaymentGatewayReference, ChargebackStatus) {
-        /* if (ChargebackStatus > 0) { */
-        this.$router.push({name: 'Chargebacks', params: {MerchantID: MerchantID, AccountID: AccountID, PaymentGatewayReference: PaymentGatewayReference}})
-        return true
-        /* }
+        if (ChargebackStatus > 0) {
+          this.$router.push({name: 'Chargebacks', params: {MerchantID: MerchantID, AccountID: AccountID, PaymentGatewayReference: PaymentGatewayReference}})
+          return true
+        }
         else {
           Toast.create({color: 'orange', html: this.$t('messages.alert_no_chargebacks'), icon: 'report_problem'})
-        } */
+        }
       },
-      viewSettlementPayoutID (MerchantID, AccountID, PayoutSettlementID) {
-        this.$router.push({name: 'SettlementID', params: {MerchantID: MerchantID, AccountID: AccountID, SettlementID: PayoutSettlementID}})
-        return true
-      },
-      viewSettlementReservationPayoutID (MerchantID, AccountID, ReservationPayoutSettlementID) {
-        this.$router.push({name: 'SettlementID', params: {MerchantID: MerchantID, AccountID: AccountID, SettlementID: ReservationPayoutSettlementID}})
-        return true
+      viewSettlementDetails (MerchantID, AccountID, PayoutSettlementID, ReservationPayoutSettlementID) {
+        var SettlementID = PayoutSettlementID || ReservationPayoutSettlementID
+        if (SettlementID !== null) {
+          var ret = {MerchantID: MerchantID, AccountID: AccountID, SettlementID: SettlementID}
+          axios.post(this.$config.get('auth.api2URL') + '/GetSettlement', ret).then(response => {
+            console.log(response.data.StatusCode)
+            this.ViewSettlement = response.data.Settlement
+          }, response => {
+            if (this.ViewSettlement.SettlementDateFrom !== null) {
+              this.ViewSettlement.SettlementDateFrom = this.$d(this.$moment(this.ViewSettlement.SettlementDateFrom, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+            }
+            if (this.ViewSettlement.SettlementDateTo !== null) {
+              this.ViewSettlement.SettlementDateTo = this.$d(this.$moment(this.ViewSettlement.SettlementDateTo, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+            }
+            Loading.hide()
+            this.$refs.layoutModalShowSettlementDetails.open()
+          })
+        }
+        else {
+          Toast.create({color: 'orange', html: 'No settlement', icon: 'report_problem'})
+        }
       },
       getCsv () {
         Loading.show()

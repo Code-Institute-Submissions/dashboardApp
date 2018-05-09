@@ -12,6 +12,17 @@
       <div class="col-md-3" style="margin-top: -10px">
         <div class="auto">
           <q-select
+            v-model="selectAccountType"
+            :options="selectAccountTypeOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.AccountType')"
+          />
+        </div>
+    </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
             v-model="selectType"
             :options="selectTypeOptions"
             @change="getData"
@@ -182,7 +193,7 @@
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '200px' },
           { label: this.$t('messages.AccountName'), field: 'Name', sort: true, type: 'string' },
           { label: this.$t('messages.AccountID'), field: 'AccountID', sort: false, type: 'guid' },
-          { label: this.$t('messages.MerchantID'), field: 'MerchantID', type: 'guid' },
+          { label: this.$t('messages.AccountsMerchantName'), field: 'MerchantName', sort: true, type: 'string' },
           { label: this.$t('messages.AccountType_short'), field: 'Type', width: '80px', sort: true, type: 'string' },
           { label: this.$t('messages.AccountClosed'), field: 'Closed', width: '80px', type: 'boolean' }
         ],
@@ -206,6 +217,12 @@
           { 'label': this.$t('messages.active_account'), 'value': 1 },
           { 'label': this.$t('messages.closed_account'), 'value': 2 }
         ],
+        selectAccountType: 0,
+        selectAccountTypeOptions: [
+          { 'label': this.$t('messages.all'), 'value': 0 },
+          { 'label': this.$t('messages.accountTypeEcom'), 'value': 'ECOM' },
+          { 'label': this.$t('messages.accountTypePos'), 'value': 'POS' }
+        ],
         MerchantID: 1,
         selectMerchantOptions: []
       }
@@ -226,12 +243,15 @@
         if (mID === 1) {
           mID = ''
         }
-        var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID, Name: ''}
+        var ret = {ListPage: this.page, ListOrder: '', MerchantID: mID}
         if (this.searchName !== '') {
           ret.Name = this.searchName
         }
         if (this.selectType !== '') {
           ret.Type = this.selectType
+        }
+        if (this.selectAccountType !== 0) {
+          ret.AccountType = this.selectAccountType
         }
         if (this.sort.column !== '') {
           ret.ListOrder = this.sort.column + '.' + this.sort.dir
@@ -256,13 +276,6 @@
           }
           if (this.page > this.maxPages) {
             this.page = this.maxPages
-          }
-          if (this.searchName1 !== '') {
-            var myArr = this.table
-            var inputTerm = this.searchName1
-            var results = _.filter(myArr, o => _.includes(o.Name, inputTerm))
-            console.log(results)
-            this.table = results
           }
           // Show reset button
           if (response.data.Pages.TotalPages < 2) {

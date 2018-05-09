@@ -28,7 +28,7 @@ module.exports = {
       app_table_title_merchants: 'Merchants List',
       WhitelabelMerchantID: 'Whitelabel merchant ID',
       MerchantID: 'Merchant ID',
-      Name: 'Name',
+      MerchantName: 'Name',
       CompanyName: 'Company name',
       CompanyAddress: 'Company address',
       CompanyContactInfo: 'Contact info',
@@ -57,8 +57,11 @@ module.exports = {
       app_table_title_accounts: 'Accounts List',
       AccountID: 'Account ID',
       AccountName: 'Account name',
+      AccountsMerchantName: 'Merchant',
       AccountType: 'Account type',
       AccountType_short: 'Type',
+      accountTypeEcom: 'ECOM',
+      accountTypePos: 'POS',
       AccountClosed: 'Active',
       account_active: 'Active account',
       account_closed: 'Closed account',
@@ -89,6 +92,7 @@ module.exports = {
       TransactionDateTime_short: 'Timestamp',
       TransactionType: 'Transaction type',
       TransactionType_short: 'TR type',
+      selectTransactionType: 'Select transaction type',
       TransactionSuccessful: 'Successful',
       TransactionSuccessful_short: 'Success',
       TransactionMessage: 'Status message',
@@ -98,6 +102,8 @@ module.exports = {
       CardType: 'Card type',
       CardScheme: 'Card scheme',
       TransactionChannel: 'Transaction channel',
+      TransactionChannel_short: 'TR Channel',
+      selectTransactionChannel: 'Select transaction channel',
       AcquirerICCost: 'Acquirer interchange cost',
       AcquirerCommision: 'Acquirer commision',
       AcquirerAdditionalCharges: 'Acquirer additional charges',
@@ -132,6 +138,7 @@ module.exports = {
       ChargebackCurrency: 'Chargeback currency',
       ChargebackStatus: 'Chargeback status',
       ChargebackStatus_short: 'CB status',
+      selectChargebackStatus: 'Select chargeback status',
       ChargebackDescription: 'Chargeback description',
       TransactionValue_chargebacks: 'Transaction value',
       show_chargebacks_from_date: 'Show chargebacks from &nbsp;&nbsp;',
@@ -144,6 +151,7 @@ module.exports = {
       SettlementNumber: 'Settlement number',
       SettlementType: 'Type of settlement',
       SettlementType_short: 'Type',
+      selectSettlementType: 'Select settlement type',
       SettlementDateFrom: 'Settled transactions from date',
       SettlementDateFrom_short: 'From date',
       SettlementDateTo: 'Settled transactions to date',
@@ -151,7 +159,8 @@ module.exports = {
       TransactionsPaidSum: 'Sum of all paid transactions',
       ReservationsPaidOutSum: 'Sum of all transaction reservations from previous settlements paid out',
       CostsSum: 'Sum of all costs',
-      Total: 'Total settlement (paid out amount)'
+      Total: 'Total settlement (paid out amount)',
+      SettlementTotal_short: 'Total paid out'
     }
   }
 }

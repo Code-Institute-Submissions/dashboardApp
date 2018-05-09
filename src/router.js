@@ -46,8 +46,7 @@ export default new VueRouter({
         {path: 'Chargebacks', name: 'ChargebacksAll', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
         {path: 'Chargebacks/:MerchantID/:AccountID/:PaymentGatewayReference?', name: 'Chargebacks', component: load('Views/Chargebacks'), meta: {auth: {roles: 'admin'}}},
         {path: 'Settlements', name: 'SettlementsAll', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Settlements/:MerchantID/:AccountID', name: 'Settlements', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}},
-        {path: 'Settlements/:MerchantID/:AccountID/:SettlementID', name: 'SettlementID', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
+        {path: 'Settlements/:MerchantID/:AccountID', name: 'Settlements', component: load('Views/Settlements'), meta: {auth: {roles: 'admin'}}}
       ]
     },
     // Always leave this last one

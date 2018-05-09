@@ -57,6 +57,17 @@
           />
         </div>
       </div>
+      <div class="col-md-3" style="margin-top: -10px">
+        <div class="auto">
+          <q-select
+            v-model="selectSettlementType"
+            :options="selectSettlementTypeOptions"
+            @change="getData"
+            style="width: 100%"
+            v-bind:float-label="$t('messages.selectSettlementType')"
+          />
+        </div>
+      </div>
     </div>
     
     <q-data-table
@@ -66,7 +77,7 @@
       ref="dataTable">
       
       <template slot="col-ShowMore" slot-scope="cell">
-        <q-btn small round flat v-on:click="viewSettlementDetails()"><q-icon name="zoom in" />
+        <q-btn small round flat v-on:click="viewSettlementDetails(cell.row.SettlementID)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
             {{ $t("messages.settlement_details") }}
           </q-tooltip>
@@ -100,6 +111,7 @@
           </q-toolbar-title>
         </q-toolbar>
         <div class="layout-padding">
+          <q-input v-model="ViewSettlement.SettlementID" v-bind:stack-label="$t('messages.SettlementID')" readonly />
           <q-input v-model="ViewSettlement.SettlementNumber" v-bind:stack-label="$t('messages.SettlementNumber')" readonly />
           <q-input v-model="ViewSettlement.SettlementType" v-bind:stack-label="$t('messages.SettlementType')" readonly />
           <q-input v-model="ViewSettlement.SettlementDateFrom" v-bind:stack-label="$t('messages.SettlementDateFrom')" readonly />
@@ -147,6 +159,7 @@
       this.setupWatchers()
       this.getDateRange()
       this.getMerchantData()
+      this.getSettlementTypes()
     },
     data () {
       return {
@@ -159,9 +172,10 @@
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '100px' },
           { label: this.$t('messages.SettlementID'), field: 'SettlementID', sort: false, type: 'string' },
           { label: this.$t('messages.SettlementNumber'), field: 'SettlementNumber', sort: true, type: 'string' },
-          { label: this.$t('messages.SettlementType_short'), field: 'SettlementType', sort: false, type: 'guid' },
+          { label: this.$t('messages.SettlementType_short'), field: 'SettlementType', sort: false, type: 'string' },
           { label: this.$t('messages.SettlementDateFrom_short'), field: 'SettlementDateFrom', sort: true, type: 'date' },
-          { label: this.$t('messages.SettlementDateTo_short'), field: 'SettlementDateTo', sort: true, type: 'boolean' }
+          { label: this.$t('messages.SettlementDateTo_short'), field: 'SettlementDateTo', sort: true, type: 'date' },
+          { label: this.$t('messages.SettlementTotal_short'), field: 'Total', sort: true, type: 'number' }
         ],
         configs: {
           columnPicker: false,
@@ -182,7 +196,8 @@
         AccountID: 1,
         selectAccountOptions: [],
         selectAccountDisabled: false,
-        SettlementID: 1
+        selectSettlementType: '',
+        selectSettlementTypeOptions: []
       }
     },
 
@@ -216,37 +231,9 @@
           aID = ''
         }
         var ret = {MerchantID: mID, AccountID: aID, DateFrom: this.searchDateFrom, DateTo: this.searchDateTo}
-        return ret
-      },
-      urlID () {
-        var mID
-        if (this.$route.params.MerchantID !== '') {
-          this.MerchantID = this.$route.params.MerchantID
-          this.$route.params.MerchantID = ''
+        if (this.selectSettlementType !== '') {
+          ret.SettlementType = this.selectSettlementType
         }
-        mID = this.MerchantID
-        if (mID === 1) {
-          mID = ''
-        }
-        var aID
-        if (this.$route.params.AccountID !== '') {
-          this.AccountID = this.$route.params.AccountID
-          this.$route.params.AccountID = ''
-        }
-        aID = this.AccountID
-        if (aID === 1) {
-          aID = ''
-        }
-        var sID
-        if (this.$route.params.SettlementID !== '') {
-          this.SettlementID = this.$route.params.SettlementID
-          this.$route.params.SettlementID = ''
-        }
-        sID = this.SettlementID
-        if (sID === 1) {
-          sID = ''
-        }
-        var ret = {MerchantID: mID, AccountID: aID, SettlementID: sID}
         return ret
       }
     },
@@ -264,6 +251,9 @@
         axios.post(this.$config.get('auth.api2URL') + '/ListSettlements', this.url).then(response => {
           console.log(response.data.StatusCode)
           this.table = response.data.Settlements
+          /* if (response.data.StatusCode === -1) {
+            Alert.create({html: 'Error: Select merchant and account'})
+          } */
           if (response.data.Pages !== null) {
             this.maxPages = response.data.Pages.TotalPages
           }
@@ -274,9 +264,6 @@
             this.page = this.maxPages
           }
           Loading.hide()
-          if (typeof this.SettlementID === 'string') {
-            this.viewSettlementDetails()
-          }
         }, response => {
           // error callback
           Loading.hide()
@@ -296,6 +283,18 @@
         }, response => {
           // error callback
           Loading.hide()
+        })
+      },
+      getSettlementTypes () {
+        // Get settlement types for dropdown menu
+        axios.post(this.$config.get('auth.api2URL') + '/ListSettlementTypes').then(response => {
+          var typesList = response.data.SettlementTypes
+          console.log(typesList)
+          for (var entry in typesList) {
+            this.selectSettlementTypeOptions.push({label: typesList[entry].Description, value: typesList[entry].ID})
+          }
+        }, response => {
+          // error callback
         })
       },
       checkAccountDisabled () {
@@ -318,18 +317,18 @@
           }
         })
       },
-      viewSettlementDetails () {
-        Loading.show()
-        console.log(this.url)
-        axios.post(this.$config.get('auth.api2URL') + '/GetSettlement', this.urlID).then(response => {
-          this.ViewSettlement = response.data.Settlement
-          console.log(response.data.StatusCode)
-          Loading.hide()
-        }, response => {
-          // error callback
-          Loading.hide()
-        })
-        this.$refs.layoutModalShowSettlementsDetails.open()
+      viewSettlementDetails (ID) {
+        var index = this.table.findIndex(obj => obj.SettlementID === ID)
+        var selectedSettlement = this.table[index]
+        this.ViewSettlement = selectedSettlement
+        if (this.ViewSettlement.SettlementDateFrom !== null) {
+          this.ViewSettlement.SettlementDateFrom = this.$d(this.$moment(this.ViewSettlement.SettlementDateFrom, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
+        if (this.ViewSettlement.SettlementDateTo !== null) {
+          this.ViewSettlement.SettlementDateTo = this.$d(this.$moment(this.ViewSettlement.SettlementDateTo, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
+        }
+
+        this.$refs.layoutModalShowSettlementDetails.open()
       },
       getCsv () {
         Loading.show()
@@ -347,6 +346,7 @@
           // error callback
           Loading.hide()
         })
+        Loading.hide()
       },
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {
