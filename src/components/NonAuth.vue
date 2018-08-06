@@ -90,6 +90,7 @@
         }, response => {
           // error callback
         })
+        // Get menu entries
         axios.post(this.$config.get('auth.api2URL') + '/GetMenu', {}).then(response => {
           if (response.data !== null) {
             this.$auth.token('menu-data', JSON.stringify(response.data))

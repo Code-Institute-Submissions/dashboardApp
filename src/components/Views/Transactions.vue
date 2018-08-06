@@ -2,6 +2,7 @@
   <div class="layout-padding justify-right">
     <p></p>
     
+    <!-- Customized filters for DataTable -->
     <div class="row">
       <div class="col-md-auto">
         <q-field >
@@ -98,6 +99,7 @@
       :columns="columns"
       ref="dataTable">
       
+      <!-- Customized columns for DataTable -->
       <template slot="col-ShowMore" slot-scope="cell">
         <q-btn small round flat v-on:click="viewTransactionDetails(cell.row.TransactionDateTime)"><q-icon name="zoom in" />
           <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 15]">
@@ -134,6 +136,8 @@
       </template>
       
     </q-data-table>
+      
+    <!-- Pagination for DataTable, reset filters button, download all data as CSV button -->
     <div class="auto">
       <q-pagination
         v-model="page"
@@ -155,6 +159,7 @@
 
     </div>
     
+    <!-- Modal to display details, all data from API response -->
     <q-modal ref="layoutModalShowTransactionDetails" :content-css="{minWidth: '45vw', minHeight: '80vh'}">
       <q-modal-layout>
         <q-toolbar slot="header">
@@ -165,19 +170,11 @@
         </q-toolbar>
         <div class="layout-padding">
           <q-input v-model="ViewTransaction.TransactionDateTime" v-bind:stack-label="$t('messages.TransactionDateTime')" readonly />
-          <!-- <q-datetime 
-            type="datetime" 
-            format="DD-MM-YYYY HH:mm:ss"
-            v-model="ViewTransaction.TransactionDateTime"
-            v-bind:stack-label="$t('messages.TransactionDateTime')"
-            disable
-             /> -->
         
           <q-input v-model="ViewTransaction.AccountID" v-bind:stack-label="$t('messages.AccountID')" readonly />
           <q-input v-model="ViewTransaction.MerchantID"  v-bind:stack-label="$t('messages.MerchantID')" readonly />
           <q-input v-model="ViewTransaction.WhitelabelMerchantID"  v-bind:stack-label="$t('messages.WhitelabelMerchantID')" readonly />
           <q-input v-model="ViewTransaction.TransactionType" v-bind:stack-label="$t('messages.TransactionType')" readonly />
-          <!-- <q-input v-model="ViewTransaction.TransactionSuccessful" v-bind:stack-label="$t('messages.TransactionSuccessful')" readonly /> -->
           <q-field icon="done" v-if="ViewTransaction.TransactionSuccessful" v-bind:label="$t('messages.transaction_successful_true')" :label-width="11" readonly >
           </q-field>
           <q-field icon="clear" v-if="!ViewTransaction.TransactionSuccessful" v-bind:label="$t('messages.transaction_successful_false')" :label-width="11" readonly >
@@ -198,7 +195,6 @@
           <q-input v-model="ViewTransaction.MerchantTotalCosts" v-bind:stack-label="$t('messages.MerchantTotalCosts')" readonly />
           <q-input v-model="ViewTransaction.MerchantReference" v-bind:stack-label="$t('messages.MerchantReference')" readonly />
           <q-input v-model="ViewTransaction.PaymentGatewayReference" v-bind:stack-label="$t('messages.PaymentGatewayReference')" readonly />
-          <!-- <q-input v-model="ViewTransaction.Settled" v-bind:stack-label="$t('messages.Settled')" readonly /> -->
           <q-field icon="done" v-if="ViewTransaction.Settled" v-bind:label="$t('messages.transaction_settled_true')" :label-width="11" readonly >
           </q-field>
           <q-field icon="clear" v-if="!ViewTransaction.Settled" v-bind:label="$t('messages.transaction_settled_false')" :label-width="11" readonly >
@@ -207,7 +203,6 @@
           <q-input v-model="ViewTransaction.PayoutValue" v-bind:stack-label="$t('messages.PayoutValue')" readonly />
           <q-input v-model="ViewTransaction.PayoutDate" v-bind:stack-label="$t('messages.PayoutDate')" readonly />
           <q-input v-model="ViewTransaction.PayoutSettlementID" v-bind:stack-label="$t('messages.PayoutSettlementID')" readonly />
-          <!-- <q-input v-model="ViewTransaction.PaidOut" v-bind:stack-label="$t('messages.PaidOut')" readonly /> -->
           <q-field icon="done" v-if="ViewTransaction.PaidOut" v-bind:label="$t('messages.transaction_paidOut_true')" :label-width="11" readonly >
           </q-field>
           <q-field icon="clear" v-if="!ViewTransaction.PaidOut" v-bind:label="$t('messages.transaction_paidOut_false')" :label-width="11" readonly >
@@ -216,7 +211,6 @@
           <q-input v-model="ViewTransaction.ReservationHeldDate" v-bind:stack-label="$t('messages.ReservationHeldDate')" readonly />
           <q-input v-model="ViewTransaction.ReservationPayoutDate" v-bind:stack-label="$t('messages.ReservationPayoutDate')" readonly />
           <q-input v-model="ViewTransaction.ReservationPayoutSettlementID" v-bind:stack-label="$t('messages.ReservationPayoutSettlementID')" readonly />
-          <!-- <q-input v-model="ViewTransaction.ReservationPaidOut" v-bind:stack-label="$t('messages.ReservationPaidOut')" readonly /> -->
           <q-field icon="done" v-if="ViewTransaction.ReservationPaidOut" v-bind:label="$t('messages.transaction_reservationPaidOut_true')" :label-width="11" readonly >
           </q-field>
           <q-field icon="clear" v-if="!ViewTransaction.ReservationPaidOut" v-bind:label="$t('messages.transaction_reservationPaidOut_false')" :label-width="11" readonly >
@@ -283,6 +277,7 @@
   var unwatchers = null
   export default {
     mounted () {
+      // Call fuctions on page load
       this.setupWatchers()
       this.getDateRange()
       this.getMerchantData()
@@ -293,10 +288,7 @@
     data () {
       return {
         table: [],
-        page: 1,
-        searchData: '',
-        searchDateFrom: '',
-        searchDateTo: '',
+        // DataTable columns and configuration
         columns: [
           { label: this.$t('messages.ShowMore'), field: 'ShowMore', sort: false, width: '150px' },
           { label: this.$t('messages.TransactionDateTime_short'), field: 'TransactionDateTime', sort: true, type: 'date' },
@@ -314,13 +306,18 @@
             maxHeight: '66vh'
           }
         },
-        maxPages: 1,
-        ViewTransaction: {},
         sort: {
           column: 'Name',
           dir: 'asc'
         },
+        // Set initial values for filters, dropdown selection, ...
+        page: 1,
+        maxPages: 1,
+        searchData: '',
+        searchDateFrom: '',
+        searchDateTo: '',
         showResetButton: true,
+        ViewTransaction: {},
         MerchantID: 1,
         selectMerchantOptions: [],
         AccountID: 1,
@@ -337,6 +334,7 @@
     },
 
     watch: {
+      // Watch for changes to call this functions
       page () {
         this.getData()
       },
@@ -346,6 +344,7 @@
       }
     },
     computed: {
+      // Get parameters for ListTransactions request
       url () {
         var mID
         if (this.$route.params.MerchantID !== '') {
@@ -382,6 +381,7 @@
       }
     },
     methods: {
+      // Date range filter with initial values
       getDateRange () {
         const startOfMonth = this.$moment().startOf('month').format('YYYY-MM-DD')
         const todayDate = this.$moment().format('YYYY-MM-DD')
@@ -389,6 +389,7 @@
         this.searchDateTo = todayDate
         this.getData()
       },
+      // ListTransactions request, response, set data for table and maxPages
       getData () {
         Loading.show()
         axios.post(this.$config.get('auth.api2URL') + '/ListTransactions', this.url).then(response => {
@@ -407,7 +408,6 @@
           // error callback
           Loading.hide()
         })
-        Loading.hide()
       },
       getMerchantData () {
         // Get list of all merchants for dropdown menu
@@ -457,6 +457,7 @@
           // error callback
         })
       },
+      // Disable account selection if no merchant is selected
       checkAccountDisabled () {
         if (typeof this.MerchantID !== 'string') {
           this.selectAccountDisabled = true
@@ -467,6 +468,7 @@
           this.getAccountData()
         }
       },
+      // Get accounts for selected merchant
       getAccountData () {
         var ret = {MerchantID: this.MerchantID}
         axios.post(this.$config.get('auth.api2URL') + '/ListAccounts', ret).then(response => {
@@ -477,6 +479,7 @@
           }
         })
       },
+      // Show detailed transaction data in modal, "zoom in" button
       viewTransactionDetails (ID) {
         var index = this.table.findIndex(obj => obj.TransactionDateTime === ID)
         var selectedTransaction = this.table[index]
@@ -512,9 +515,9 @@
         if (this.ViewTransaction.ReservationPayoutDate !== null) {
           this.ViewTransaction.ReservationPayoutDate = this.$d(this.$moment(this.ViewTransaction.ReservationPayoutDate, 'YYYY-MM-DD HH:mm:ss').local(), 'long')
         }
-
         this.$refs.layoutModalShowTransactionDetails.open()
       },
+      // Redirect to transaction chargebacks, "forward" button
       viewTransactionChargeback (MerchantID, AccountID, PaymentGatewayReference, ChargebackStatus) {
         if (ChargebackStatus > 0) {
           this.$router.push({name: 'Chargebacks', params: {MerchantID: MerchantID, AccountID: AccountID, PaymentGatewayReference: PaymentGatewayReference}})
@@ -524,6 +527,7 @@
           Toast.create({color: 'orange', html: this.$t('messages.alert_no_chargebacks'), icon: 'report_problem'})
         }
       },
+      // Show detailed settlement data in modal, "zoom in" button
       viewSettlementDetails (MerchantID, AccountID, PayoutSettlementID, ReservationPayoutSettlementID) {
         var SettlementID = PayoutSettlementID || ReservationPayoutSettlementID
         if (SettlementID !== null) {
@@ -546,6 +550,7 @@
           Toast.create({color: 'orange', html: 'No settlement', icon: 'report_problem'})
         }
       },
+      // Download all data from ListTransactions response in CSV format
       getCsv () {
         Loading.show()
         var ret = {DateFrom: this.searchDateFrom, DateTo: this.searchDateTo, GetCsv: true}
@@ -563,6 +568,7 @@
           Loading.hide()
         })
       },
+      // Reset filters
       resetFilters () {
         this.MerchantID = 1
         this.AccountID = 1
@@ -573,6 +579,7 @@
         this.selectChargebackStatus = ''
         this.getDateRange()
       },
+      // General table sorting
       onSort (sortColumn, sortDirection) {
         if (sortDirection === 1) {
           this.sort.dir = 'asc'

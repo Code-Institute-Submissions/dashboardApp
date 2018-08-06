@@ -24,7 +24,6 @@ import Vuelidate from 'vuelidate'
 import VueI18n from 'vue-i18n'
 import locales from 'utils/locales/locale.js'
 import datetime from 'utils/locales/datetime.js'
-import lodash from 'lodash'
 /* import Quasar, * as All from 'quasar'
 Vue.use(Quasar, {
   components: All,
@@ -49,7 +48,6 @@ Vue.router = router
 Vue.use(VueConfig, {
   config: appConfig
 })
-Object.defineProperty(Vue.prototype, '$lodash', { value: lodash })
 // Vue.http.options.root = process.env.API_URL
 axios.interceptors.response.use(undefined, function (error) {
   if (error.response.status === 401 && error.response.statusText !== '') {

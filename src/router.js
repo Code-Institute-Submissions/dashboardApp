@@ -37,6 +37,7 @@ export default new VueRouter({
       name: 'admin',
       component: load('Main'),
       children: [
+        // Named routes for nested components
         {path: 'Home', name: 'Home', component: load('Views/Home'), meta: {auth: {roles: 'admin'}}},
         {path: 'Merchants', name: 'Merchants', component: load('Views/Merchants'), meta: {auth: {roles: 'admin'}}},
         {path: 'Accounts', name: 'AccountsAll', component: load('Views/Accounts'), meta: {auth: {roles: 'admin'}}},

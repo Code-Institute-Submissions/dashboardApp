@@ -3,6 +3,7 @@
   <div v-if="$auth.ready()">
     <div id="q-app">
       <div>
+        <!-- Entry point for application -->
         <router-view />
       </div>
     </div>
