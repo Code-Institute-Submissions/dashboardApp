@@ -45,6 +45,7 @@ npm install or npm update
 npm run dev
 ~~~~
 
+Username for login is tjasaa@gmail.com and password is ynVOYYQG1d.
 
 ## Testing
 
